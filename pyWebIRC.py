@@ -135,7 +135,7 @@ if __name__ == "__main__":
     bouncer = PyIrcBouncer(server)
     start_new_thread(bouncer.start, ())
 
-    app.debug = True
+    #app.debug = True
     app.ircServer = bouncer
     time.sleep(5)
 
