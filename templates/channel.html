@@ -3,7 +3,14 @@
 <title>Hello from Flask</title>
 {% if server and channel %}
   <h1>show #{{ channel }} on {{ server }}!</h1>
-  <p><a href="?">refresh</a></p>
+  <p>
+  {{ cfg.servers.server.server }}: 
+  {%- for chan in cfg.servers.server.channel -%}
+  <a href="/channel/{{ cfg.servers.server.server }}/{{ chan[1:] }}">{{ chan }}</a> | 
+  {%- endfor -%} 
+   | 
+  <a href="?">refresh</a>
+  </p>
   <hr/>
   {%- for line in log -%}
     {{ line }}
@@ -16,7 +23,7 @@
   <form action="/send" method="post">
     <input type="hidden" name="channel" value="{{ channel }}">
     <input type="hidden" name="server" value="{{ server }}">
-    Msg: <input type="text" name="msg"/ autofocus>
+   {{ cfg.servers.server.nick }}> Msg: <input type="text" name="msg"/ autofocus>
     <input type="submit" value="Submit">
   </form>
   </p>

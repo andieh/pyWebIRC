@@ -123,7 +123,7 @@ def show_channel(server=None, channel=None):
         log = log.split("\n")
         f.close()
     
-    return render_template("channel.html", server=server, channel=channel, log=log)
+    return render_template("channel.html", server=server, channel=channel, log=log, cfg=config)
 
 if __name__ == "__main__":
     if not os.path.exists("logs"):
