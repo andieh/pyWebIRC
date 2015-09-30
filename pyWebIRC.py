@@ -3,7 +3,7 @@
 from flask import Flask, render_template, request, url_for, redirect, Response
 from jinja2 import evalcontextfilter, Markup, escape
 
-from flask.ext.login import LoginManager, UserMixin, login_required, current_user
+from flask.ext.login import LoginManager, UserMixin, login_required, current_user, login_user, logout_user
 
 import re
 import os
@@ -17,8 +17,10 @@ from modules.bouncer import PyIrcBouncer
 _paragraph_re = re.compile(r'(?:\r\n|\r|\n){2,}')
 app = Flask(__name__)
 loginManager = LoginManager()
+app.config['SESSION_TYPE'] = 'filesystem'
+app.secret_key = 'hmmseeeecret!'
 loginManager.init_app(app)
-passes = {}
+config = None
 
 class User(UserMixin):
     # proxy for a database of users
@@ -32,6 +34,11 @@ class User(UserMixin):
     def get(cls,id):
         return cls.user_database.get(id)
 
+@loginManager.user_loader
+def load_user_from_session(userid):
+    user = User(userid, "from_session")
+    login_user(user)
+    return user
 
 @loginManager.request_loader
 def load_user(request):
@@ -45,16 +52,26 @@ def load_user(request):
         return None
 
     #pwd = User.get(login)
-    pwd = passes.get(login)
+    if config.flaskLogin != login:
+        pwd = None
+    else:
+        pwd = config.flaskPassword
     if pwd is None:
         return None
     
     h = hashlib.sha224(password).hexdigest()
     if (pwd == h):
-        return User(login, pwd)
+        user = User(login, pwd)
+        login_user(user)
+        return user
 
     return None
 
+@app.route("/logout/")
+@login_required
+def logout():
+    logout_user()
+    return redirect("/")
 
 @app.route("/settings/", methods=["POST"])
 @login_required
@@ -78,6 +95,7 @@ def main():
     return render_template("login.html")
 
 @app.route("/send", methods = ['POST', 'GET'])
+@login_required
 def send():
     if request.method == 'POST':
         if request.form["msg"] and \
@@ -92,6 +110,7 @@ def send():
     return "error"
 
 @app.route("/channel/<server>/<channel>")
+@login_required
 def show_channel(server=None, channel=None):
     if server is None or channel is None:
         return "error"
@@ -110,10 +129,9 @@ if __name__ == "__main__":
     if not os.path.exists("logs"):
         os.mkdir("logs")
 
-    cfg = MyConfig("pyWebIRC.cfg")
+    config = MyConfig("pyWebIRC.cfg")
     
-    passes[cfg.flaskLogin] = cfg.flaskPassword
-    server = cfg["server"]
+    server = config["server"]
     bouncer = PyIrcBouncer(server)
     start_new_thread(bouncer.start, ())
 

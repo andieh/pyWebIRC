@@ -8,3 +8,5 @@
 {%- for channel in irc.channel -%}
   <p>Channel <a href="/channel/{{ irc.server }}/{{ channel[1:] }}">{{ channel }}</a></p>
 {%- endfor -%}
+
+<p><a href="/logout/">Logout</a></p>
