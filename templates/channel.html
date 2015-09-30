@@ -4,10 +4,12 @@
 {% if server and channel %}
   <h1>show #{{ channel }} on {{ server }}!</h1>
   <p>
-  {{ cfg.servers.server.server }}: 
-  {%- for chan in cfg.servers.server.channel -%}
-  <a href="/channel/{{ cfg.servers.server.server }}/{{ chan[1:] }}">{{ chan }}</a> | 
-  {%- endfor -%} 
+  {%- for srv in cfg.servers.keys() -%}
+    {{ cfg.servers[srv].server }}: 
+    {%- for chan in cfg.servers[srv].channel -%}
+    <a href="/channel/{{ cfg.servers[srv].server }}/{{ chan[1:] }}">{{ chan }}</a> | 
+    {%- endfor -%} 
+  {%- endfor -%}
    | 
   <a href="?">refresh</a>
   </p>
@@ -23,7 +25,7 @@
   <form action="/send" method="post">
     <input type="hidden" name="channel" value="{{ channel }}">
     <input type="hidden" name="server" value="{{ server }}">
-   {{ cfg.servers.server.nick }}> Msg: <input type="text" name="msg"/ autofocus>
+   Msg: <input type="text" name="msg"/ autofocus>
     <input type="submit" value="Submit">
   </form>
   </p>

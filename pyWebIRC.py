@@ -131,11 +131,11 @@ if __name__ == "__main__":
 
     config = MyConfig("pyWebIRC.cfg")
     
-    server = config["server"]
+    server = config["oftc"]
     bouncer = PyIrcBouncer(server)
     start_new_thread(bouncer.start, ())
 
-    #app.debug = True
+    app.debug = True
     app.ircServer = bouncer
     time.sleep(5)
 
