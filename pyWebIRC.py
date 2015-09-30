@@ -130,8 +130,7 @@ if __name__ == "__main__":
         os.mkdir("logs")
 
     config = MyConfig("pyWebIRC.cfg")
-    
-    server = config["oftc"]
+    server = config["server"]
     bouncer = PyIrcBouncer(server)
     start_new_thread(bouncer.start, ())
 
