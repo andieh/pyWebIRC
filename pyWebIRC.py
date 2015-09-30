@@ -110,7 +110,7 @@ if __name__ == "__main__":
     if not os.path.exists("logs"):
         os.mkdir("logs")
 
-    cfg = MyConfig("pyIrc.cfg")
+    cfg = MyConfig("pyWebIRC.cfg")
     
     passes[cfg.flaskLogin] = cfg.flaskPassword
     server = cfg["server"]
