@@ -76,7 +76,7 @@ def logout():
 @app.route("/settings/", methods=["POST"])
 @login_required
 def protected():
-    return render_template("settings.html", current_user=current_user, irc=app.ircServer)
+    return render_template("settings.html", current_user=current_user, cfg=config)
     #return Response(response="Hello Protected World!", status=200)
 
 
@@ -105,7 +105,9 @@ def send():
             server = request.form["server"]
             channel = request.form["channel"]
             adr = "/channel/{}/{}".format(server, channel)
-            app.ircServer.send("#{}".format(channel), msg)
+            for srv in config.servers.keys():    
+                if config.servers[srv]["server"] == server:
+                    config.servers[srv]["bouncer"].send("#{}".format(channel), msg)
             return redirect(adr)
     return "error"
 
@@ -130,13 +132,13 @@ if __name__ == "__main__":
         os.mkdir("logs")
 
     config = MyConfig("pyWebIRC.cfg")
-    server = config["server"]
-    bouncer = PyIrcBouncer(server)
-    start_new_thread(bouncer.start, ())
+    for srv in config.servers.keys():
+        print "start server {}".format(srv)
+        server = config[srv]
+        config[srv]["bouncer"] = PyIrcBouncer(server)
+        start_new_thread(config[srv]["bouncer"].start, ())
 
     #app.debug = True
-    app.ircServer = bouncer
     time.sleep(5)
-
 
     app.run()

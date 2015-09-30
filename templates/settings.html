@@ -3,10 +3,11 @@
 
 <h1>Hello {{ current_user.id }}</h1>
 <p>password: {{ current_user.password }}</p>
-
-<h2>Server {{ irc.server }}</h2>
-{%- for channel in irc.channel -%}
-  <p>Channel <a href="/channel/{{ irc.server }}/{{ channel[1:] }}">{{ channel }}</a></p>
-{%- endfor -%}
+  {%- for srv in cfg.servers.keys() -%}
+    <h2>{{ cfg.servers[srv].server }}</h2> 
+    {%- for chan in cfg.servers[srv].channel -%}
+    <p><a href="/channel/{{ cfg.servers[srv].server }}/{{ chan[1:] }}">{{ chan }}</a></p> 
+    {%- endfor -%} 
+  {%- endfor -%}
 
 <p><a href="/logout/">Logout</a></p>
