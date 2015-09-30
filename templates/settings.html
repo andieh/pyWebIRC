@@ -1,0 +1,10 @@
+<!doctype html>
+<title>Settings</title>
+
+<h1>Hello {{ current_user.id }}</h1>
+<p>password: {{ current_user.password }}</p>
+
+<h2>Server {{ irc.server }}</h2>
+{%- for channel in irc.channel -%}
+  <p>Channel <a href="/channel/{{ irc.server }}/{{ channel[1:] }}">{{ channel }}</a></p>
+{%- endfor -%}

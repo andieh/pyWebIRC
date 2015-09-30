@@ -1,0 +1,9 @@
+[user]
+login = choose_login
+password = your_hash_see_readme
+
+[server]
+server = server_address
+port = your_port
+channel = your_channel_s_seperated_by_whitespace
+nick = your_nick
