@@ -70,4 +70,48 @@ class PyIrcBouncer(irc.bot.SingleServerIRCBot):
         self.logfiles[channel].flush()
         print "[{}] {}".format(channel, w)
 
+    def on_error(self, connection, event):
+        print "error"
+
+    def on_join(self, connection, event):
+        print "join"
+
+    def on_kick(self, connection, event):
+        print "kick"
+
+    def on_mode(self, connection, event):
+        print "mode"
+
+    def on_part(self, connection, event):
+        print "part"
+
+    def on_ping(self, connection, event):
+        print "ping"
+
+    def on_privmsg(self, connection, event):
+        print "privmsg"
+
+    def on_privnotice(self, connection, event):
+        print "privnotice"
+
+    def on_pubnotice(self, connection, event):
+        print "pubnotice"
+
+    def on_quit(self, connection, event):
+        print "quit"
+
+    def on_invite(self, connection, event):
+        print "invite"
+
+    def on_pong(self, connection, event):
+        print "pong"
+
+    def on_action(self, connection, event):
+        print "action"
+
+    def on_topic(self, connection, event):
+        print "topic"
+
+    def on_nick(self, connection, event):
+        print "nick"
 
