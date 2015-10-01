@@ -1,30 +1,32 @@
 # pyWebIRC
-a fully server side based IRC bouncer written in python and flask
+A fully server side based IRC bouncer written in python and flask. Joined channels are logged, so you don't miss anything. Write messages from every computer you want. Multiple servers are supported. 
 
-# SOFTWARE
-you need 
-flask, flask-login and the mini IRC library.
-with archlinux, simply run
-pacman -S python2-flask, python2-flask-login, python2-irc
+# NEEDED SOFTWARE
+What you need:
+- flask
+- flask-login 
+- and the mini IRC library.
+Everything should be available through your package manager. With archlinux, simply run:
+ pacman -S python2-flask, python2-flask-login, python2-irc
 
 # INSTALLATION
 Move pyWebIRC.cfg.template to pyWebIRC.cfg and edit the files according to your needs.
 the password is a sha224 hash, which can be generated with python:
-python> import hashlib
-        print hashlib.sha224("your password").hexdigest()
+- set a login and password (plain text)
+- For each server you want to connect add a new (unique) section with server adress, port, nick and channels to Join
 
-currently only one server is supported, but as much channels as you want.
-
-start the client with 
-python2 pyWebIRC. 
+Start the client with:
+ python2 pyWebIRC.py
 
 the bouncer can be reached with any browser and your localip:
-http://localhost:5000
+ http://localhost:5000
 
 # TODO
 a lot of todos:
-- multiple server support 
+- set port and ip in config file
 - move flask stuff to class
-- login procedure?
-- log need another user structure for multiple user support.
-- i have no idea
+- more event handlers
+- add CSS
+- keep messages on reload (set interval in the config file)
+- error handling!
+Feel free to contribute!

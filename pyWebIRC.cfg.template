@@ -1,6 +1,6 @@
 [user]
 login = choose_login
-password = your_hash_see_readme
+password = choose_password_plaintext
 
 [server]
 server = server_address

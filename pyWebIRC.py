@@ -8,7 +8,6 @@ from flask.ext.login import LoginManager, UserMixin, login_required, current_use
 import re
 import os
 import time
-import hashlib
 from thread import start_new_thread
 
 from modules.config import MyConfig
@@ -59,8 +58,7 @@ def load_user(request):
     if pwd is None:
         return None
     
-    h = hashlib.sha224(password).hexdigest()
-    if (pwd == h):
+    if (pwd == password):
         user = User(login, pwd)
         login_user(user)
         return user
