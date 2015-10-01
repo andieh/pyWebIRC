@@ -150,8 +150,11 @@ if __name__ == "__main__":
         # TODO: logbase to config object
         config[srv]["bouncer"] = PyIrcBouncer(server, config.logBase)
         start_new_thread(config[srv]["bouncer"].start, ())
+        while not config[srv]["bouncer"].connected:
+            print "wait until server is ready..."
+            time.sleep(1)
 
     #app.debug = True
-    time.sleep(5)
+    #time.sleep(5)
 
     app.run()

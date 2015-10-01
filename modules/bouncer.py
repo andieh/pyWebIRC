@@ -30,7 +30,6 @@ class PyIrcBouncer(irc.bot.SingleServerIRCBot):
             os.mkdir(self.logpath)
         self.logfiles = {}
         
-        self.connected = True
 
     def on_welcome(self, c, e):
         for channel in self.channel:
@@ -39,6 +38,9 @@ class PyIrcBouncer(irc.bot.SingleServerIRCBot):
             # log file
             fn = os.path.join(self.logpath, "{}.log".format(channel))
             self.logfiles[channel] = open(fn, "a")
+        
+        # connected, maybe add some error handling here...
+        self.connected = True
 
     def leave(self):
         if not self.connected:
