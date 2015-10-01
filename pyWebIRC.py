@@ -74,8 +74,15 @@ def logout():
 @app.route("/settings/", methods=["POST"])
 @login_required
 def protected():
-    return render_template("settings.html", current_user=current_user, cfg=config)
-    #return Response(response="Hello Protected World!", status=200)
+    # maybe show settings page here, but take first 
+    # server / channel to show something.
+    # could be better
+    #return render_template("settings.html", current_user=current_user, cfg=config)
+    srv = config.servers.items()[0][1]
+    server = srv["server"]
+    channel = srv["channel"][0][1:]
+    adr = "/channel/{}/{}".format(server, channel)
+    return redirect(adr)
 
 
 
