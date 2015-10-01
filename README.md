@@ -13,7 +13,7 @@ Everything should be available through your package manager. With archlinux, sim
 Move pyWebIRC.cfg.template to pyWebIRC.cfg and edit the files according to your needs.
 the password is a sha224 hash, which can be generated with python:
 - set a login and password (plain text)
-- For each server you want to connect add a new (unique) section with server adress, port, nick and channels to Join
+- For each server you want to connect add a new (unique) section with server adress, port, nick and channels to join
 
 Start the client with:
  python2 pyWebIRC.py
@@ -29,4 +29,5 @@ a lot of todos:
 - add CSS
 - keep messages on reload (set interval in the config file)
 - error handling!
+- send commands to IRC server (/nick, /part, etc.)
 Feel free to contribute!
