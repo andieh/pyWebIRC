@@ -59,8 +59,11 @@ class PyIrcBouncer(irc.bot.SingleServerIRCBot):
         self.connection.privmsg(channel, msg.decode("utf-8"))
         self.log(channel, self.nick, msg.decode("utf-8"))
 
+    def get_nick(self, full):
+        return full.split("!")[0]
+
     def on_pubmsg(self, c, e):
-        nick = e.source.split("!")[0]
+        nick = self.get_nick(e.source)
         msg = e.arguments[0]
         self.log(e.target, nick, msg)
 
@@ -71,47 +74,62 @@ class PyIrcBouncer(irc.bot.SingleServerIRCBot):
         print "[{}] {}".format(channel, w)
 
     def on_error(self, connection, event):
-        print "error"
+        print "error: {}".format(str(event.arguments))
+        print event.source, event.target
 
     def on_join(self, connection, event):
-        print "join"
+        self.log(event.target, "*", "{} enters the room!".format(self.get_nick(event.source)))
 
     def on_kick(self, connection, event):
-        print "kick"
+        print "kick: {}".format(str(event.arguments))
+        print event.source, event.target
 
     def on_mode(self, connection, event):
-        print "mode"
+        print "mode: {}".format(str(event.arguments))
+        print event.source, event.target
 
     def on_part(self, connection, event):
-        print "part"
+        self.log(event.target, "*", "{} leaves the room!".format(self.get_nick(event.source)))
 
     def on_ping(self, connection, event):
-        print "ping"
+        print "ping: {}".format(str(event.arguments))
+        print event.source, event.target
 
     def on_privmsg(self, connection, event):
-        print "privmsg"
+        print "privmsg: {}".format(str(event.arguments))
+        print event.source, event.target
 
     def on_privnotice(self, connection, event):
-        print "privnotice"
+        print "privnotice: {}".format(str(event.arguments))
+        print event.source, event.target
 
     def on_pubnotice(self, connection, event):
-        print "pubnotice"
+        print "pubnotice: {}".format(str(event.arguments))
+        print event.source, event.target
 
     def on_quit(self, connection, event):
-        print "quit"
+        print "quit: {}".format(str(event.arguments))
+        print event.source, event.target
 
     def on_invite(self, connection, event):
-        print "invite"
+        print "invite: {}".format(str(event.arguments))
+        print event.source, event.target
 
     def on_pong(self, connection, event):
-        print "pong"
+        print "pong: {}".format(str(event.arguments))
+        print event.source, event.target
 
     def on_action(self, connection, event):
-        print "action"
+        print "action: {}".format(str(event.arguments))
+        print event.source, event.target
 
     def on_topic(self, connection, event):
-        print "topic"
+        print "topic: {}".format(str(event.arguments))
+        print event.source, event.target
 
     def on_nick(self, connection, event):
-        print "nick"
+        nick = self.get_nick(event.source)
+        nNick = event.target
+        for chan in self.channel:
+            self.log(chan, "*", "{} is now known as {}".format(nick, nNick))
 
