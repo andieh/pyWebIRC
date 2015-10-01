@@ -122,8 +122,8 @@ def show_channel(server=None, channel=None):
     if server is None or channel is None:
         return "error"
 
-    fn = "logs/{}/#{}.log".format(server, channel)
     log = ""
+    fn = os.path.join(config.logBase, server, "#{}.log".format(channel))
     if os.path.exists(fn):
         f = open(fn, "r")
         log = f.read().decode("utf-8")
@@ -133,14 +133,22 @@ def show_channel(server=None, channel=None):
     return render_template("channel.html", server=server, channel=channel, log=log, cfg=config)
 
 if __name__ == "__main__":
+    # TODO: replace logs path with path from config?
     if not os.path.exists("logs"):
+        print "create log path"
         os.mkdir("logs")
 
     config = MyConfig("pyWebIRC.cfg")
+    config.logBase = os.path.join("logs", config.flaskLogin)
+    if not os.path.exists(config.logBase):
+        print "create log path for user {}".format(config.flaskLogin)
+        os.mkdir(config.logBase)
+
     for srv in config.servers.keys():
         print "start server {}".format(srv)
         server = config[srv]
-        config[srv]["bouncer"] = PyIrcBouncer(server)
+        # TODO: logbase to config object
+        config[srv]["bouncer"] = PyIrcBouncer(server, config.logBase)
         start_new_thread(config[srv]["bouncer"].start, ())
 
     #app.debug = True

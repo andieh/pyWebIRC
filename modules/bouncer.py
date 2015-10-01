@@ -7,7 +7,7 @@ import sys
 import os
 
 class PyIrcBouncer(irc.bot.SingleServerIRCBot):
-    def __init__(self, cfg):
+    def __init__(self, cfg, logBase):
         self.connected = False
         try:
             self.channel = cfg["channel"]
@@ -24,7 +24,7 @@ class PyIrcBouncer(irc.bot.SingleServerIRCBot):
                 self.nick)
 
         # check for log file
-        self.logpath = "logs/{}".format(self.server)
+        self.logpath = os.path.join(logBase, self.server)
         if not os.path.exists(self.logpath):
             print "create log path {}".format(self.logpath)
             os.mkdir(self.logpath)
