@@ -38,7 +38,6 @@ class PyIrcBouncer(irc.bot.SingleServerIRCBot):
             # log file
             fn = os.path.join(self.logpath, "{}.log".format(channel))
             self.logfiles[channel] = open(fn, "a")
-        
         # connected, maybe add some error handling here...
         self.connected = True
 
@@ -76,60 +75,75 @@ class PyIrcBouncer(irc.bot.SingleServerIRCBot):
         print "[{}] {}".format(channel, w)
 
     def on_error(self, connection, event):
+        print 15,
         print "error: {}".format(str(event.arguments))
         print event.source, event.target
 
     def on_join(self, connection, event):
+        print 14,
         self.log(event.target, "*", "{} enters the room!".format(self.get_nick(event.source)))
 
     def on_kick(self, connection, event):
+        print 13,
         print "kick: {}".format(str(event.arguments))
         print event.source, event.target
 
     def on_mode(self, connection, event):
+        print 12,
         print "mode: {}".format(str(event.arguments))
         print event.source, event.target
 
     def on_part(self, connection, event):
+        print 11,
         self.log(event.target, "*", "{} leaves the room!".format(self.get_nick(event.source)))
 
     def on_ping(self, connection, event):
+        print 10,
         print "ping: {}".format(str(event.arguments))
         print event.source, event.target
 
     def on_privmsg(self, connection, event):
+        print 9,
         print "privmsg: {}".format(str(event.arguments))
         print event.source, event.target
 
     def on_privnotice(self, connection, event):
+        print 8,
         print "privnotice: {}".format(str(event.arguments))
         print event.source, event.target
 
     def on_pubnotice(self, connection, event):
+        print 7,
         print "pubnotice: {}".format(str(event.arguments))
         print event.source, event.target
 
     def on_quit(self, connection, event):
+        print 6,
         print "quit: {}".format(str(event.arguments))
         print event.source, event.target
 
     def on_invite(self, connection, event):
+        print 5,
         print "invite: {}".format(str(event.arguments))
         print event.source, event.target
 
     def on_pong(self, connection, event):
+        print 4,
         print "pong: {}".format(str(event.arguments))
         print event.source, event.target
 
     def on_action(self, connection, event):
+        print 3,
         print "action: {}".format(str(event.arguments))
         print event.source, event.target
 
     def on_topic(self, connection, event):
+        print 2,
         print "topic: {}".format(str(event.arguments))
         print event.source, event.target
 
     def on_nick(self, connection, event):
+        print 1,
         nick = self.get_nick(event.source)
         nNick = event.target
         for chan in self.channel:

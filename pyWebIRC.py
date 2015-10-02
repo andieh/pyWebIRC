@@ -78,6 +78,8 @@ def protected():
     # server / channel to show something.
     # could be better
     #return render_template("settings.html", current_user=current_user, cfg=config)
+
+
     srv = config.servers.items()[0][1]
     server = srv["server"]
     channel = srv["channel"][0][1:]
@@ -154,7 +156,7 @@ if __name__ == "__main__":
             print "wait until server is ready..."
             time.sleep(1)
 
-    #app.debug = True
+    app.debug = True
     #time.sleep(5)
 
     app.run()
