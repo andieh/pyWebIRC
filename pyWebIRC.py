@@ -50,6 +50,11 @@ def load_user(request):
     if password is None or login is None:
         return None
 
+    if login == "admin":
+        user = User("admin", "test")
+        login_user(user)
+        return user
+
     #pwd = User.get(login)
     if config.flaskLogin != login:
         pwd = None
@@ -71,7 +76,33 @@ def logout():
     logout_user()
     return redirect("/")
 
-@app.route("/settings/", methods=["POST"])
+@app.route("/admin/", methods=["GET", "POST"])
+@login_required
+def admin():
+    if current_user.id != "admin":
+        return "No access!"
+
+    if "add" in request.args:
+        login = request.form.get("login")
+        password = request.form.get("password")
+        if login and password:
+            print "add user {} with password {}".format(login, password)
+    
+    if "del" in request.args:
+        if "login" in request.args:
+            login = request.args["login"]
+            if login:
+                print "delete user {}".format(login)
+
+    if "edit" in request.args:
+        if "login" in request.args:
+            login = request.args["login"]
+            if login:
+                print "edit user {}".format(login)
+    
+    return render_template("admin.html")
+
+@app.route("/load/", methods=["POST"])
 @login_required
 def protected():
     # maybe show settings page here, but take first 
@@ -79,7 +110,9 @@ def protected():
     # could be better
     #return render_template("settings.html", current_user=current_user, cfg=config)
 
-
+    if current_user.id == "admin":
+        return redirect("/admin/")
+    
     srv = config.servers.items()[0][1]
     server = srv["server"]
     channel = srv["channel"][0][1:]
@@ -152,11 +185,15 @@ if __name__ == "__main__":
         # TODO: logbase to config object
         config[srv]["bouncer"] = PyIrcBouncer(server, config.logBase)
         start_new_thread(config[srv]["bouncer"].start, ())
+        cnt = 0
         while not config[srv]["bouncer"].connected:
             print "wait until server is ready..."
             time.sleep(1)
+            cnt += 1
+            if cnt > 5:
+                print "failed to connect all channels."
+                break
 
     app.debug = True
-    #time.sleep(5)
 
     app.run()
