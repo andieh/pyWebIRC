@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 
-from flask import Flask, render_template, request, url_for, redirect, Response, session
+from flask import Flask, render_template, request, url_for, redirect, \
+        Response, session, jsonify
 from jinja2 import evalcontextfilter, Markup, escape
 
-from flask.ext.login import LoginManager, UserMixin, login_required, current_user, login_user, logout_user
+from flask.ext.login import LoginManager, UserMixin, login_required, \
+        current_user, login_user, logout_user
 
 import re
 import os
@@ -233,8 +235,11 @@ def show_channel(server=None, channel=None):
         log = f.read().decode("utf-8")
         log = log.split("\n")
         f.close()
-    
-    return render_template("channel.html", server=server, channel=channel, log=log, cfg=config[current_user.id])
+    json = request.args.get('json', None)
+    if json is not None:
+        return jsonify(log=log)
+    else:
+        return render_template("channel.html", server=server, channel=channel, log=log, cfg=config[current_user.id])
 
 if __name__ == "__main__":
     # TODO: replace logs path with path from config?
