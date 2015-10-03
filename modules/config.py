@@ -24,9 +24,21 @@ class CoreConfig:
         return self.config.get("config", key)
 
 class UserConfig:
-    def __init__(self, cfg):
-        self.configFile = cfg
+    def __init__(self, cfg, new=False):
         self.servers = []
+        self.srv = {}
+        
+        if new:
+            self.config = cfg
+            self.login = cfg["login"]
+            self.config.pop("login")
+            self.configFile = cfg["file"]
+            self.config.pop("file")
+            self.password = cfg["password"]
+
+            return
+
+        self.configFile = cfg
         self.login = os.path.split(cfg)[1][:-4]
         self.password = None
         
@@ -36,7 +48,6 @@ class UserConfig:
             sys.exit(1)
         self.config = {}
         self.config["login"] = self.login
-        self.srv = {}
 
         for section in config.sections():
             if section == "config":

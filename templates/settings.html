@@ -32,7 +32,7 @@ Nick: {{ cfg.srv[srv].nick }}<br/>
 {%- endfor -%}
 </font>
 {%- endif -%}
-<form action="" method="POST">
+<form action="/settings/" method="POST">
 	Name: <input type="text" name="name" value="{{ values["name"] }}"/><br/>
 	Server: <input type="text" name="server" value="{{ values["server"] }}"/><br/>
 	Port: <input type="text" name="port" value="{{ values["port"] }}"/><br/>

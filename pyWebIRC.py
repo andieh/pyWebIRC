@@ -101,6 +101,17 @@ def admin():
                 f.write("timeout = 10\n")
                 f.write("\n")
                 f.close()
+
+                values = {}
+                values["password"] = password
+                values["timeout"] = str(10)
+                values["file"] = os.path.join(config["admin"]["config_directory"], "{}.cfg".format(login))
+                values["login"] = login
+                cfg = UserConfig(values, True)
+                cfg.setLogPath(config["admin"]["log_directory"])
+                config[login] = cfg
+                config["admin"].users.append(login)
+
                 print "add user {} with password {}".format(login, password)
     
     if "del" in request.args:
@@ -161,10 +172,10 @@ def protected():
         return redirect("/admin/")
     
     servers = config[current_user.id].servers
-    print servers
-    print current_user.id
     if not len(servers):
-        return render_template("settings.html", cfg=config[current_user.id])
+        error = []
+        values = {}
+        return render_template("settings.html", cfg=config[current_user.id], error=error, values=values)
 
     server = servers[0]
     channel = config[current_user.id].server(server, "channel")[0][1:]
@@ -237,6 +248,9 @@ if __name__ == "__main__":
 
     # user configs
     cfgDir = config["admin"]["config_directory"]
+    if not os.path.exists(cfgDir):
+        os.mkdir(cfgDir)
+
     cfgs = [ f for f in os.listdir(cfgDir) if os.path.isfile(os.path.join(cfgDir,f)) ]
     for cf in cfgs:
         conf = UserConfig(os.path.join(cfgDir, cf))
