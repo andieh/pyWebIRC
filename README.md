@@ -1,5 +1,5 @@
 # pyWebIRC
-A fully server side based IRC bouncer written in python and flask. Joined channels are logged, so you don't miss anything. Write messages from every computer you want. Multiple servers are supported. 
+A fully server side based IRC bouncer and web client written in python and flask. Joined channels are logged, so you don't miss anything. Write messages from every computer you want. Multiple servers are supported. 
 
 # NEEDED SOFTWARE
 What you need:
