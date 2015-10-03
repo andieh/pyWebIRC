@@ -82,25 +82,40 @@ def admin():
     if current_user.id != "admin":
         return "No access!"
 
+    cfgDir = "config"
+    if not os.path.exists(cfgDir):
+        os.mkdir(cfgDir)
+
+    error = []
     if "add" in request.args:
         login = request.form.get("login")
         password = request.form.get("password")
         if login and password:
-            print "add user {} with password {}".format(login, password)
+            fn = "{}/{}.cfg".format(cfgDir,login)
+            if os.path.exists(fn):
+                error.append("user already exists")
+            elif login.find(" ") != -1:
+                error.append("no whitespaces allowed in username")
+            else:
+                f = open(fn, "w")
+                f.write("[config]\n")
+                f.write("password = {}\n".format(password))
+                f.write("timeout = 10\n")
+                f.write("\n")
+                f.close()
+                print "add user {} with password {}".format(login, password)
     
     if "del" in request.args:
         if "login" in request.args:
             login = request.args["login"]
             if login:
                 print "delete user {}".format(login)
+                fn = "{}/{}.cfg".format(cfgDir, login)
+                if login and os.path.exists(fn):
+                    os.unlink(fn)
 
-    if "edit" in request.args:
-        if "login" in request.args:
-            login = request.args["login"]
-            if login:
-                print "edit user {}".format(login)
-    
-    return render_template("admin.html")
+    cfgs = [ f[:-4] for f in os.listdir(cfgDir) if os.path.isfile(os.path.join(cfgDir,f)) ]
+    return render_template("admin.html", users=cfgs, error=error)
 
 @app.route("/load/", methods=["POST"])
 @login_required

@@ -1,21 +1,23 @@
 <!doctype html>
 <title>Admin Page</title>
 <h1>Users</h1>
+{%- if error -%}
+{%- for er in error -%}
+<font color="#ff0000">{{ er }}</font>
+{%- endfor -%}
+{%- endif -%}
 <hr/>
-<p>andieh 
-<a href="?login=andieh&edit">edit</a> 
-<a href="?login=andieh&del">delete</a></p>
+{%- for user in users -%}
+<p>{{ user }}
+[<a href="?login={{ user }}&del" onclick="return confirm('Delete user {{ user }}?')">delete</a>]
+</p>
+{%- endfor -%}
+<hr/>
 <p>add new user:
 <form action="?add" method="POST">
 Login: <input type="text" name="login">
 Passwort: <input type="text" name="password">
 <input type="submit" value="add"></p>
 </form>
-<h1>Settings</h1>
 <hr/>
-<form action="?settings" method="POST">
-<p>Refresh: </p>
-<p>...</p>
-<p><input type="submit" value="edit"></p>
-</form>
 <p><a href="/logout/">logout</a></p>
