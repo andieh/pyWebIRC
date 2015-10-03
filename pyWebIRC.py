@@ -57,19 +57,12 @@ def load_user(request):
         login_user(user)
         return user
 
-    # try to login regular user
-    return None
-
-    #pwd = User.get(login)
-    if config.flaskLogin != login:
-        pwd = None
-    else:
-        pwd = config.flaskPassword
-    if pwd is None:
+    # try to login regular User
+    if login not in config["admin"].users:
         return None
-    
-    if (pwd == password):
-        user = User(login, pwd)
+
+    if config[login]["password"] == password:
+        user = User(login, password)
         login_user(user)
         return user
 
@@ -130,12 +123,15 @@ def protected():
     # could be better
     #return render_template("settings.html", current_user=current_user, cfg=config)
 
-    if current_user.id == "admin":
+    if current_user.id == config["admin"]["login"]:
         return redirect("/admin/")
     
-    srv = config.servers.items()[0][1]
-    server = srv["server"]
-    channel = srv["channel"][0][1:]
+    servers = config[current_user.id].servers
+    if not len(servers):
+        return "please add a server!"
+
+    server = servers[0]
+    channel = config[current_user.id].server(server, "channel")[0][1:]
     adr = "/channel/{}/{}".format(server, channel)
     return redirect(adr)
 
@@ -164,10 +160,10 @@ def send():
             msg = request.form["msg"].encode("utf-8")
             server = request.form["server"]
             channel = request.form["channel"]
+            print "send {} to {} and {}".format(msg, server, channel)
             adr = "/channel/{}/{}".format(server, channel)
-            for srv in config.servers.keys():    
-                if config.servers[srv]["server"] == server:
-                    config.servers[srv]["bouncer"].send("#{}".format(channel), msg)
+            b = config[current_user.id].server(server, "bouncer")
+            b.send("#{}".format(channel), msg)
             return redirect(adr)
     return "error"
 
@@ -178,14 +174,15 @@ def show_channel(server=None, channel=None):
         return "error"
 
     log = ""
-    fn = os.path.join(config.logBase, server, "#{}.log".format(channel))
+    srv = config[current_user.id].srv[server]["bouncer"]
+    fn = os.path.join(srv.logpath, "#{}.log".format(channel))
     if os.path.exists(fn):
         f = open(fn, "r")
         log = f.read().decode("utf-8")
         log = log.split("\n")
         f.close()
     
-    return render_template("channel.html", server=server, channel=channel, log=log, cfg=config)
+    return render_template("channel.html", server=server, channel=channel, log=log, cfg=config[current_user.id])
 
 if __name__ == "__main__":
     # TODO: replace logs path with path from config?
@@ -215,10 +212,10 @@ if __name__ == "__main__":
         print "load server settings for user {}".format(user)
         for srv in config[user].servers:
             print "start server {}".format(srv)
-            config[user].bouncer = PyIrcBouncer(config[user], srv)
-            start_new_thread(config[user].bouncer.start, ())
+            config[user].srv[srv]["bouncer"] = PyIrcBouncer(config[user], srv)
+            start_new_thread(config[user].srv[srv]["bouncer"].start, ())
             cnt = 0
-            while not config[user].bouncer.connected:
+            while not config[user].srv[srv]["bouncer"].connected:
                 print "wait until server is ready..."
                 time.sleep(1)
                 cnt += 1

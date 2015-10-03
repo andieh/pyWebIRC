@@ -4,10 +4,10 @@
 {% if server and channel %}
   <h1>show #{{ channel }} on {{ server }}!</h1>
   <p>
-  {%- for srv in cfg.servers.keys() -%}
-    {{ cfg.servers[srv].server }}: 
-    {%- for chan in cfg.servers[srv].channel -%}
-    <a href="/channel/{{ cfg.servers[srv].server }}/{{ chan[1:] }}">{{ chan }}</a> | 
+  {%- for srv in cfg["servers"] -%}
+    {{ cfg.srv[srv].server }}: 
+    {%- for chan in cfg.srv[srv].channel -%}
+    <a href="/channel/{{ cfg.srv[srv].name }}/{{ chan[1:] }}">{{ chan }}</a> | 
     {%- endfor -%} 
   {%- endfor -%}
    | 

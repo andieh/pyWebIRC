@@ -53,6 +53,7 @@ class UserConfig:
                 elif key == "port":
                     v = int(value)
                 self.srv[section][key] = v
+            self.srv[section]["name"] = section
 
     def server(self, server, key):
         return self.srv[server][key]
