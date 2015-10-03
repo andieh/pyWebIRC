@@ -1,13 +1,16 @@
 <!doctype html>
 <title>Settings</title>
 
-<h1>Hello {{ current_user.id }}</h1>
-<p>password: {{ current_user.password }}</p>
-  {%- for srv in cfg.servers.keys() -%}
-    <h2>{{ cfg.servers[srv].server }}</h2> 
-    {%- for chan in cfg.servers[srv].channel -%}
-    <p><a href="/channel/{{ cfg.servers[srv].server }}/{{ chan[1:] }}">{{ chan }}</a></p> 
-    {%- endfor -%} 
-  {%- endfor -%}
+<h1>Configuration</h1>
+<hr/>
+User: {{ current_user.id }}<br/>
+Passwort: {{ cfg["password"] }}<br/>
+Timeout: {{ cfg["timeout"] }}
 
-<p><a href="/logout/">Logout</a></p>
+<h1>Servers</h1>
+<hr/>
+{%- for srv in cfg.servers -%}
+<p><b>{{ cfg.srv[srv].name }}</b>
+connect || disconnect || delete<br/>
+</p>
+{%- endfor -%}

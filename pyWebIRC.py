@@ -115,6 +115,11 @@ def admin():
     cfgs = [ f[:-4] for f in os.listdir(cfgDir) if os.path.isfile(os.path.join(cfgDir,f)) ]
     return render_template("admin.html", users=cfgs, error=error)
 
+@app.route("/settings/", methods=["GET"])
+@login_required
+def settings():
+    return render_template("settings.html", cfg=config[current_user.id])
+
 @app.route("/load/", methods=["POST"])
 @login_required
 def protected():
@@ -127,6 +132,8 @@ def protected():
         return redirect("/admin/")
     
     servers = config[current_user.id].servers
+    print servers
+    print current_user.id
     if not len(servers):
         return "please add a server!"
 
@@ -223,5 +230,5 @@ if __name__ == "__main__":
                     print "failed to connect all channels."
                     break
 
-    #app.debug = True
+    app.debug = True
     app.run()
