@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from flask import Flask, render_template, request, url_for, redirect, Response
+from flask import Flask, render_template, request, url_for, redirect, Response, session
 from jinja2 import evalcontextfilter, Markup, escape
 
 from flask.ext.login import LoginManager, UserMixin, login_required, current_user, login_user, logout_user
@@ -33,6 +33,15 @@ class User(UserMixin):
     def get(cls,id):
         return cls.user_database.get(id)
 
+@app.route("/")
+def main():
+    return render_template("login.html")
+
+#executed before view is rendered. maybe needed
+@app.before_request
+def before_request():
+    pass
+
 @loginManager.user_loader
 def load_user_from_session(userid):
     user = User(userid, "from_session")
@@ -43,7 +52,6 @@ def load_user_from_session(userid):
 def load_user(request):
     password = request.form.get("password")
     login = request.form.get("login")
-
     if not password: password = None
     if not login: login = None
 
@@ -72,6 +80,7 @@ def load_user(request):
 @login_required
 def logout():
     logout_user()
+    session.clear()
     return redirect("/")
 
 @app.route("/admin/", methods=["GET", "POST"])
@@ -153,7 +162,7 @@ def settings():
             print "add new server {}".format(values["name"])
             if config[current_user.id].addNewServer(values):
                 config[current_user.id].srv[values["name"]]["bouncer"] = PyIrcBouncer(config[current_user.id], values["name"])
-                start_new_thread(config[user].srv[values["name"]]["bouncer"].start, ())
+                start_new_thread(config[current_user.id].srv[values["name"]]["bouncer"].start, ())
                 values = {}
             else:
                 error.append("failed to parse values!")
@@ -192,10 +201,6 @@ def nl2br(eval_ctx, value):
     if eval_ctx.autoescape:
         result = Markup(result)
     return result
-
-@app.route("/")
-def main():
-    return render_template("login.html")
 
 @app.route("/send", methods = ['POST', 'GET'])
 @login_required
