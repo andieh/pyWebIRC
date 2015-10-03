@@ -1,0 +1,5 @@
+[config]
+login = admin
+password = passwort_plain_text
+log_directory = logs/
+config_directory = config/
