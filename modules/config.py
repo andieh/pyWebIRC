@@ -46,13 +46,17 @@ class UserConfig:
 
             self.servers.append(section)
             self.srv[section] = {}
-            for (key, value) in config.items(section):
-                v = value
-                if key == "channel":
-                    v = value.split(" ")
-                elif key == "port":
-                    v = int(value)
-                self.srv[section][key] = v
+            try:
+                for (key, value) in config.items(section):
+                    v = value
+                    if key == "channel":
+                        v = value.split(" ")
+                    elif key == "port":
+                        v = int(value)
+                    self.srv[section][key] = v
+            except:
+                print "failed to parse config file"
+                sys.exit(1)
             self.srv[section]["name"] = section
 
     def server(self, server, key):
@@ -60,6 +64,56 @@ class UserConfig:
 
     def __getitem__(self, key):
         return self.config[key]
+
+    def removeServer(self, name):
+        bouncer = self.srv[name]["bouncer"]
+        bouncer.leave()
+        self.servers.remove(name)
+        self.srv.pop(name)
+        f = open(self.configFile, "r")
+        content = f.read()
+        f.close()
+
+        nc = ""
+        delete = False
+        for line in content.split("\n"):
+            if line == "[{}]".format(name):
+                delete = True
+            elif line.startswith("["):
+                delete = False
+            if not delete:
+                nc += "{}\n".format(line)
+
+        f = open(self.configFile, "w")
+        f.write(nc)
+        f.close()
+
+    def addNewServer(self, values):
+        names = values.keys()
+        name = values["name"]
+        content = ""
+        content += "[{}]\n".format(name)
+        names.remove("name")
+        self.servers.append(name)
+        self.srv[name] = {}
+        for n in names:
+            content += "{} = {}\n".format(n, values[n])
+            self.srv[name][n] = values[n]
+        
+        try:
+            self.srv[name]["port"] = int(self.srv[name]["port"])
+            self.srv[name]["channel"] = self.srv[name]["channel"].split(" ")
+            self.srv[name]["name"] = name
+        except:
+            self.srv.pop(name)
+            self.servers.remove(name)
+            return False
+
+        f = open(self.configFile, "a")
+        f.write(content)
+        f.close()
+
+        return True
 
     def setLogPath(self, path):
         p = os.path.join(path, self.login)

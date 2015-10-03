@@ -11,6 +11,33 @@ Timeout: {{ cfg["timeout"] }}
 <hr/>
 {%- for srv in cfg.servers -%}
 <p><b>{{ cfg.srv[srv].name }}</b>
-connect || disconnect || delete<br/>
+connect || 
+disconnect || 
+<a href="?del&server={{ srv }}">delete</a><br/>
+Server: {{ cfg.srv[srv].server }}<br/>
+Port: {{ cfg.srv[srv].port }}<br/>
+Channel: 
+{%- for c in cfg.srv[srv].channel -%}
+<a href="/channel/{{ srv }}/{{ c[1:] }}">{{ c }}</a>, 
+{%- endfor -%}
+<br/>
+Nick: {{ cfg.srv[srv].nick }}<br/>
 </p>
 {%- endfor -%}
+<p><b>Add new server:</b><br/>
+{%- if error -%}
+<font color="#ff0000">
+{%- for e in error -%}
+{{ e }}<br/>
+{%- endfor -%}
+</font>
+{%- endif -%}
+<form action="" method="POST">
+	Name: <input type="text" name="name" value="{{ values["name"] }}"/><br/>
+	Server: <input type="text" name="server" value="{{ values["server"] }}"/><br/>
+	Port: <input type="text" name="port" value="{{ values["port"] }}"/><br/>
+	Channel: <input type="text" name="channel" value="{{ values["channel"] }}"/><br/>
+	Nick: <input type="text" name="nick" value="{{ values["nick"] }}"/><br/>
+	<input type="submit" value="add"/>
+</form>
+</p>

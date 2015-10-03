@@ -115,10 +115,39 @@ def admin():
     cfgs = [ f[:-4] for f in os.listdir(cfgDir) if os.path.isfile(os.path.join(cfgDir,f)) ]
     return render_template("admin.html", users=cfgs, error=error)
 
-@app.route("/settings/", methods=["GET"])
+@app.route("/settings/", methods=["GET", "POST"])
 @login_required
 def settings():
-    return render_template("settings.html", cfg=config[current_user.id])
+
+    values = {}
+    error = []
+    if "del" in request.args:
+        if "server" in request.args:
+            server = request.args["server"]
+            config[current_user.id].removeServer(server)
+
+    else:
+        names = ["name", "server", "nick", "port", "channel"]
+
+        for n in names:
+            values[n] = request.form.get(n)
+            if values[n] is None:
+                error = []
+                values = {}
+                break
+            if not values[n]:
+                error.append("missing value for field {}".format(n))
+
+        if len(values) and not len(error):
+            print "add new server {}".format(values["name"])
+            if config[current_user.id].addNewServer(values):
+                config[current_user.id].srv[values["name"]]["bouncer"] = PyIrcBouncer(config[current_user.id], values["name"])
+                start_new_thread(config[user].srv[values["name"]]["bouncer"].start, ())
+                values = {}
+            else:
+                error.append("failed to parse values!")
+        
+    return render_template("settings.html", cfg=config[current_user.id], error=error, values=values)
 
 @app.route("/load/", methods=["POST"])
 @login_required
@@ -135,7 +164,7 @@ def protected():
     print servers
     print current_user.id
     if not len(servers):
-        return "please add a server!"
+        return render_template("settings.html", cfg=config[current_user.id])
 
     server = servers[0]
     channel = config[current_user.id].server(server, "channel")[0][1:]
@@ -211,7 +240,7 @@ if __name__ == "__main__":
     cfgs = [ f for f in os.listdir(cfgDir) if os.path.isfile(os.path.join(cfgDir,f)) ]
     for cf in cfgs:
         conf = UserConfig(os.path.join(cfgDir, cf))
-        conf.setLogPath(os.path.join(logPath))
+        conf.setLogPath(logPath)
         config[conf.login] = conf
         config["admin"].users.append(conf.login)
 
@@ -230,5 +259,5 @@ if __name__ == "__main__":
                     print "failed to connect all channels."
                     break
 
-    app.debug = True
+    #app.debug = True
     app.run()
