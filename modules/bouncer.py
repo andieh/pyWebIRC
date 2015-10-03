@@ -7,16 +7,12 @@ import sys
 import os
 
 class PyIrcBouncer(irc.bot.SingleServerIRCBot):
-    def __init__(self, cfg, logBase):
+    def __init__(self, cfg, name):
         self.connected = False
-        try:
-            self.channel = cfg["channel"]
-            self.nick = cfg["nick"]
-            self.port = cfg["port"]
-            self.server = cfg["server"]
-        except KeyError:
-            print "key missing in config file, channel, nick, port and server needed"
-            sys.exit(1)
+        self.channel = cfg.server(name, "channel")
+        self.nick = cfg.server(name, "nick")
+        self.port = cfg.server(name, "port")
+        self.server = cfg.server(name, "server")
 
         irc.bot.SingleServerIRCBot.__init__(self, \
                 [(self.server, self.port)], \
@@ -24,7 +20,7 @@ class PyIrcBouncer(irc.bot.SingleServerIRCBot):
                 self.nick)
 
         # check for log file
-        self.logpath = os.path.join(logBase, self.server)
+        self.logpath = os.path.join(cfg["logPath"], self.server)
         if not os.path.exists(self.logpath):
             print "create log path {}".format(self.logpath)
             os.mkdir(self.logpath)

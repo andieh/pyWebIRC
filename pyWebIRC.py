@@ -10,7 +10,7 @@ import os
 import time
 from thread import start_new_thread
 
-from modules.config import MyConfig
+from modules.config import UserConfig, CoreConfig
 from modules.bouncer import PyIrcBouncer
 
 _paragraph_re = re.compile(r'(?:\r\n|\r|\n){2,}')
@@ -50,10 +50,15 @@ def load_user(request):
     if password is None or login is None:
         return None
 
-    if login == "admin":
-        user = User("admin", "test")
+    # check for admin account
+    ad = config["admin"]
+    if login == ad["login"] and password == ad["password"]:
+        user = User(ad["login"], ad["password"])
         login_user(user)
         return user
+
+    # try to login regular user
+    return None
 
     #pwd = User.get(login)
     if config.flaskLogin != login:
@@ -188,27 +193,38 @@ if __name__ == "__main__":
         print "create log path"
         os.mkdir("logs")
 
-    config = MyConfig("pyWebIRC.cfg")
-    config.logBase = os.path.join("logs", config.flaskLogin)
-    if not os.path.exists(config.logBase):
-        print "create log path for user {}".format(config.flaskLogin)
-        os.mkdir(config.logBase)
+    # read configuration
+    config = {}
+    # admin configuration
+    config["admin"] = CoreConfig("pyWebIRC.cfg")
+    logPath = config["admin"]["log_directory"]
+    if not os.path.exists(logPath):
+        os.mkdir(logPath)
+        print "create log path {}".format(logPath)
 
-    for srv in config.servers.keys():
-        print "start server {}".format(srv)
-        server = config[srv]
-        # TODO: logbase to config object
-        config[srv]["bouncer"] = PyIrcBouncer(server, config.logBase)
-        start_new_thread(config[srv]["bouncer"].start, ())
-        cnt = 0
-        while not config[srv]["bouncer"].connected:
-            print "wait until server is ready..."
-            time.sleep(1)
-            cnt += 1
-            if cnt > 5:
-                print "failed to connect all channels."
-                break
+    # user configs
+    cfgDir = config["admin"]["config_directory"]
+    cfgs = [ f for f in os.listdir(cfgDir) if os.path.isfile(os.path.join(cfgDir,f)) ]
+    for cf in cfgs:
+        conf = UserConfig(os.path.join(cfgDir, cf))
+        conf.setLogPath(os.path.join(logPath))
+        config[conf.login] = conf
+        config["admin"].users.append(conf.login)
 
-    app.debug = True
+    for user in config["admin"].users:
+        print "load server settings for user {}".format(user)
+        for srv in config[user].servers:
+            print "start server {}".format(srv)
+            config[user].bouncer = PyIrcBouncer(config[user], srv)
+            start_new_thread(config[user].bouncer.start, ())
+            cnt = 0
+            while not config[user].bouncer.connected:
+                print "wait until server is ready..."
+                time.sleep(1)
+                cnt += 1
+                if cnt > 5:
+                    print "failed to connect all channels."
+                    break
 
+    #app.debug = True
     app.run()
