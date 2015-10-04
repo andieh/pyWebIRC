@@ -1,5 +1,17 @@
 [config]
 login = admin
 password = passwort_plain_text
+
+# store logs in this directory
 log_directory = logs/
+
+# store user configs in this directory
 config_directory = config/
+
+# local address of the flask server, 
+# set to 0.0.0.0 if it should be accessable 
+# from the outside
+host = 127.0.0.1
+
+# port of the flask server
+port = 5001

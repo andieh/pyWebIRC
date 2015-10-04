@@ -12,21 +12,21 @@ Everything should be available through your package manager. With archlinux, sim
 # INSTALLATION
 Move pyWebIRC.cfg.template to pyWebIRC.cfg and edit the files according to your needs.
 - set a login and password (plain text)
-- For each server you want to connect add a new (unique) section with server adress, port, nick and channels to join
+- more settings are commented
 
 Start the client with:
  python2 pyWebIRC.py
 
-the bouncer can be reached with any browser and your localip:
+the bouncer can be reached with any browser at the address specified in the config file:
  http://localhost:5000
+
+Now login as the admin user and add as much user you need. Each user can specify their own servers and channels on the settings page.
 
 # TODO
 a lot of todos:
-- set port and ip in config file
 - move flask stuff to class
 - more event handlers
 - add CSS
-- keep messages on reload (set interval in the config file)
 - error handling!
 - send commands to IRC server (/nick, /part, etc.)
 
