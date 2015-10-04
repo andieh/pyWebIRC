@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from flask import Flask, render_template, request, url_for, redirect, \
-        Response, session, jsonify
+        Response, session, jsonify, g
 from jinja2 import evalcontextfilter, Markup, escape
 
 from flask.ext.login import LoginManager, UserMixin, login_required, \
@@ -10,6 +10,7 @@ from flask.ext.login import LoginManager, UserMixin, login_required, \
 import re
 import os
 import time
+import math
 from thread import start_new_thread
 
 from modules.config import UserConfig, CoreConfig
@@ -22,6 +23,62 @@ app.config['SESSION_TYPE'] = 'filesystem'
 app.secret_key = 'hmmseeeecret!'
 loginManager.init_app(app)
 config = None
+waiter = None
+
+class IP():
+    def __init__(self, ip):
+        timestamp = int(time.time())
+        self.ip = ip
+        self.lastAccess = self.firstAccess = timestamp
+        # store access tries in the last n seconds
+        self.accesses = []
+        self.logTime = 10
+
+    def update(self):
+        timestamp = int(time.time())
+        self.lastAccess = timestamp
+        self.accesses.append(timestamp)
+        self.accesses = [ts for ts in self.accesses if timestamp - ts < self.logTime ]
+
+    def tries(self):
+        return len(self.accesses)
+
+    def age(self):
+        return int(time.time()) - self.firstAccess
+
+class Waiter():
+    def __init__(self):
+        print "waiter initialized"
+        self.ips = {}
+        
+    def cleanup(self):
+        # cleanup ips after a threshold of time
+        threshold = 60*60*24 # seconds
+        
+        current = int(time.time())
+        for ip in self.ips.keys():
+            if self.ips[ip].age() > threshold:
+                self.ips.pop(ip)
+
+    def check(self, ip):
+        self.cleanup()
+        
+        if not ip in self.ips:
+            self.ips[ip] = IP(ip)
+
+        self.ips[ip].update()
+        tries = self.ips[ip].tries()
+        wait = math.exp(tries-5)
+        if wait < 1:
+            return True
+        
+        else:
+            if wait > 60:
+                wait = 60
+            #time.sleep(wait)
+            return False
+            
+        return True
 
 class User(UserMixin):
     # proxy for a database of users
@@ -37,6 +94,9 @@ class User(UserMixin):
 
 @app.route("/")
 def main():
+    if not waiter.check(request.remote_addr):
+        return "denied!"
+
     return render_template("login.html")
 
 #executed before view is rendered. maybe needed
@@ -282,6 +342,7 @@ if __name__ == "__main__":
                 if cnt > 5:
                     print "failed to connect all channels."
                     break
+    waiter = Waiter()
 
-    #app.debug = True
+    app.debug = True
     app.run()
