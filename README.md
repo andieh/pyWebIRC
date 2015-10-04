@@ -30,4 +30,4 @@ a lot of todos:
 - error handling!
 - send commands to IRC server (/nick, /part, etc.)
 
-Feel free to contribute!
+Feel free to contribute!!
