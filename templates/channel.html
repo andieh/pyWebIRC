@@ -15,10 +15,26 @@ function reload() {
 	});
 };
 
+function send() {
+	$.post( "/send", {
+	  channel: "{{ channel }}",
+	  server: "{{ server }}",
+	  msg: $( "#msg" ).val()
+	}, function (data) {
+		reload();
+		$( "#msg" ).val("");
+	});
+};
+
 $(function() {
 	reload();
 	interval_ref = setInterval(reload, refresh_time*1000);
 	/*var retime = parseInt($( "#refreshlen" ).value, 10);*/
+	$( "#msg" ).keydown(function(event){
+            if(event.keyCode == 13)
+		send();
+	});
+	$( "#msg" ).focus();
 });
 </script>
 	<title>Hello from Flask</title>
@@ -43,12 +59,8 @@ $(function() {
   <div id=log> </div>
   <hr/>
   <p>
-  <form action="/send" method="post">
-    <input type="hidden" name="channel" value="{{ channel }}">
-    <input type="hidden" name="server" value="{{ server }}">
-   Msg: <input type="text" name="msg"/ autofocus>
-    <input type="submit" value="Submit">
-  </form>
+   Msg: <input type="text" name="msg" id="msg" />
+    <input type="button" onclick="send()" value="Send">
   </p>
 {% else %}
   <h1>No channel selected!</h1>
