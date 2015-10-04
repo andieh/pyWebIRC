@@ -344,5 +344,5 @@ if __name__ == "__main__":
                     break
     waiter = Waiter()
 
-    app.debug = True
+    #app.debug = True
     app.run()
