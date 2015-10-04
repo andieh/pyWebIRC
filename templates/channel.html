@@ -1,6 +1,29 @@
 <!doctype html>
-<meta http-equiv="refresh" content="10; URL=?">
-<title>Hello from Flask</title>
+<html lang="en">
+<head>
+	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js">
+        </script>
+<script type="text/javascript">
+var loglen = 20;
+var refresh_time = 5;
+var interval_ref = "";
+
+function reload() {
+	loglen = parseInt($( "#loglen" ).val(), 10) + 1;
+	$.getJSON("/channel/{{ server }}/{{ channel }}?json=true", function( data ) {
+	   $( "#log" ).html( data["log"].slice(-loglen).join("<br />") );
+	});
+};
+
+$(function() {
+	reload();
+	interval_ref = setInterval(reload, refresh_time*1000);
+	/*var retime = parseInt($( "#refreshlen" ).value, 10);*/
+});
+</script>
+	<title>Hello from Flask</title>
+</head>
+<body>
 {% if server and channel %}
   <h1>show #{{ channel }} on {{ server }}!</h1>
   <p>
@@ -11,17 +34,13 @@
     {%- endfor -%} 
   {%- endfor -%}
   <br/>
-  <a href="?">refresh</a>
+  <a href="javascript:reload()">refresh</a>
   || <a href="/settings/">settings</a>
   || <a href="/logout/">logout</a>
+  || history: <input type="text" name="loglen" id="loglen" value="20" />
   </p>
   <hr/>
-  {%- for line in log -%}
-    {{ line }}
-    {%- if not loop.last -%}
-      <br/>
-    {%- endif -%}
-  {%- endfor -%}
+  <div id=log> </div>
   <hr/>
   <p>
   <form action="/send" method="post">
@@ -34,4 +53,5 @@
 {% else %}
   <h1>No channel selected!</h1>
 {% endif %}
-
+</body>
+</html>
