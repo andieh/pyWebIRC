@@ -253,17 +253,6 @@ def protected():
     adr = "/channel/{}/{}".format(server, channel)
     return redirect(adr)
 
-
-
-@app.template_filter()
-@evalcontextfilter
-def nl2br(eval_ctx, value):
-    result = u'\n\n'.join(u'<p>%s</p>' % p.replace('\n', '<br\>\n') \
-        for p in _paragraph_re.split(escape(value)))
-    if eval_ctx.autoescape:
-        result = Markup(result)
-    return result
-
 @app.route("/send", methods = ['POST', 'GET'])
 @login_required
 def send():
@@ -287,14 +276,27 @@ def show_channel(server=None, channel=None):
     if server is None or channel is None:
         return "error"
 
-    log = ""
+    log = []
     srv = config[current_user.id].srv[server]["bouncer"]
+    nick = config[current_user.id].srv[server]["nick"]
     fn = os.path.join(srv.logpath, "#{}.log".format(channel))
     if os.path.exists(fn):
         f = open(fn, "r")
-        log = f.read().decode("utf-8")
-        log = log.split("\n")
+        l = f.read().decode("utf-8")
+        l = l.split("\n")
         f.close()
+
+        # do html editing in the renderer
+        for line in l:
+            print line, current_user.id
+            if line.startswith("*>"):
+                nl = "<i>{}</i>".format(line)
+            elif line.find(nick) != -1 and not line.startswith(nick):
+                nl = "<b>{}</b>".format(line)
+            else:
+                nl = line
+            log.append(nl)
+
     json = request.args.get('json', None)
     if json is not None:
         return jsonify(log=log)
