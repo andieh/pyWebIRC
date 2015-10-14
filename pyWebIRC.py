@@ -25,6 +25,10 @@ loginManager.init_app(app)
 config = None
 waiter = None
 
+import logging
+log = logging.getLogger('werkzeug')
+log.setLevel(logging.ERROR)
+
 class IP():
     def __init__(self, ip):
         timestamp = int(time.time())
@@ -288,7 +292,6 @@ def show_channel(server=None, channel=None):
 
         # do html editing in the renderer
         for line in l:
-            print line, current_user.id
             if line.startswith("*>"):
                 nl = "<i>{}</i>".format(line)
             elif line.find(nick) != -1 and not line.startswith(nick):

@@ -76,7 +76,6 @@ class PyIrcBouncer(irc.bot.SingleServerIRCBot):
         print event.source, event.target
 
     def on_join(self, connection, event):
-        print 14,
         self.log(event.target, "*", "{} enters the room!".format(self.get_nick(event.source)))
 
     def on_kick(self, connection, event):
@@ -90,23 +89,23 @@ class PyIrcBouncer(irc.bot.SingleServerIRCBot):
         print event.source, event.target
 
     def on_part(self, connection, event):
-        print 11,
         self.log(event.target, "*", "{} leaves the room!".format(self.get_nick(event.source)))
 
     def on_ping(self, connection, event):
-        print 10,
-        print "ping: {}".format(str(event.arguments))
-        print event.source, event.target
+        #print "receive ping from server {}".format(event.target)
+        pass
 
     def on_privmsg(self, connection, event):
-        print 9,
-        print "privmsg: {}".format(str(event.arguments))
-        print event.source, event.target
+        sender = self.get_nick(event.source)
+        receiver = event.target
+        msg = str(event.arguments[0])
+        print "[{}> {}]".format(sender, msg)
 
     def on_privnotice(self, connection, event):
-        print 8,
-        print "privnotice: {}".format(str(event.arguments))
-        print event.source, event.target
+        server = event.source
+        method = event.target
+        msg = str(event.arguments[0])
+        print "[{}] {}".format(server, msg)
 
     def on_pubnotice(self, connection, event):
         print 7,
@@ -114,9 +113,9 @@ class PyIrcBouncer(irc.bot.SingleServerIRCBot):
         print event.source, event.target
 
     def on_quit(self, connection, event):
-        print 6,
-        print "quit: {}".format(str(event.arguments))
-        print event.source, event.target
+        user = self.get_nick(event.source)
+        for chan in self.channel:
+            self.log(chan, "*", "{} leaves the room!".format(user))
 
     def on_invite(self, connection, event):
         print 5,
@@ -139,7 +138,6 @@ class PyIrcBouncer(irc.bot.SingleServerIRCBot):
         print event.source, event.target
 
     def on_nick(self, connection, event):
-        print 1,
         nick = self.get_nick(event.source)
         nNick = event.target
         for chan in self.channel:
