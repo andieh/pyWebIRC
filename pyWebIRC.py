@@ -24,10 +24,12 @@ app.secret_key = 'hmmseeeecret!'
 loginManager.init_app(app)
 config = None
 waiter = None
+enableDebug = False
 
-import logging
-log = logging.getLogger('werkzeug')
-log.setLevel(logging.ERROR)
+if not enableDebug:
+    import logging
+    log = logging.getLogger('werkzeug')
+    log.setLevel(logging.ERROR)
 
 class IP():
     def __init__(self, ip):
@@ -292,6 +294,7 @@ def show_channel(server=None, channel=None):
 
         # do html editing in the renderer
         for line in l:
+            line = line.encode("utf-8")
             if line.startswith("*>"):
                 nl = "<i>{}</i>".format(line)
             elif line.find(nick) != -1 and not line.startswith(nick):
@@ -349,7 +352,7 @@ if __name__ == "__main__":
                     break
     waiter = Waiter()
 
-    #app.debug = True
+    app.debug = enableDebug
     try:
         host = config["admin"]["host"]
         port = int(config["admin"]["port"])
