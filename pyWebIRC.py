@@ -154,7 +154,7 @@ def logout():
 @app.route("/admin/", methods=["GET", "POST"])
 @login_required
 def admin():
-    if current_user.id != "admin":
+    if current_user.id != config["admin"]["login"]:
         return "No access!"
 
     cfgDir = "config"
