@@ -16,12 +16,21 @@ from thread import start_new_thread
 from modules.config import UserConfig, CoreConfig
 from modules.bouncer import PyIrcBouncer
 
+from utils import Waiter, IP
+
 _paragraph_re = re.compile(r'(?:\r\n|\r|\n){2,}')
 app = Flask(__name__)
+
+# init login manager
 loginManager = LoginManager()
+loginManager.session_protection = "strong"
+
+
 app.config['SESSION_TYPE'] = 'filesystem'
 app.secret_key = 'hmmseeeecret!'
 loginManager.init_app(app)
+
+# mmmh, threaded-web-applic using un-managed globals, is this a good idea?
 config = None
 waiter = None
 enableDebug = False
@@ -31,63 +40,8 @@ if not enableDebug:
     log = logging.getLogger('werkzeug')
     log.setLevel(logging.ERROR)
 
-class IP():
-    def __init__(self, ip):
-        timestamp = int(time.time())
-        self.ip = ip
-        self.lastAccess = self.firstAccess = timestamp
-        # store access tries in the last n seconds
-        self.accesses = []
-        self.logTime = 10
-
-    def update(self):
-        timestamp = int(time.time())
-        self.lastAccess = timestamp
-        self.accesses.append(timestamp)
-        self.accesses = [ts for ts in self.accesses if timestamp - ts < self.logTime ]
-
-    def tries(self):
-        return len(self.accesses)
-
-    def age(self):
-        return int(time.time()) - self.firstAccess
-
-class Waiter():
-    def __init__(self):
-        print "waiter initialized"
-        self.ips = {}
-        
-    def cleanup(self):
-        # cleanup ips after a threshold of time
-        threshold = 60*60*24 # seconds
-        
-        current = int(time.time())
-        for ip in self.ips.keys():
-            if self.ips[ip].age() > threshold:
-                self.ips.pop(ip)
-
-    def check(self, ip):
-        self.cleanup()
-        
-        if not ip in self.ips:
-            self.ips[ip] = IP(ip)
-
-        self.ips[ip].update()
-        tries = self.ips[ip].tries()
-        wait = math.exp(tries-5)
-        if wait < 1:
-            return True
-        
-        else:
-            if wait > 60:
-                wait = 60
-            #time.sleep(wait)
-            return False
-            
-        return True
-
 class User(UserMixin):
-    # proxy for a database of users
+    """User-profile-data storage"""
     user_database = {}
 
     def __init__(self, username, password):
@@ -98,31 +52,38 @@ class User(UserMixin):
     def get(cls,id):
         return cls.user_database.get(id)
 
+    def __repr__(self):
+        return "<UserData login:'{}' pass:'{}'>".format(self.id, self.password)
+
+
+# TODO: move views to an actual views.py file instead of littering the main exe
 @app.route("/")
 def main():
     if not waiter.check(request.remote_addr):
         return "denied!"
-
     return render_template("login.html")
 
-#executed before view is rendered. maybe needed
+# executed before view is rendered. maybe needed
 @app.before_request
 def before_request():
     pass
 
 @loginManager.user_loader
 def load_user_from_session(userid):
+    """Load user session using our UserManager (TODO: 'UserManager' :D)"""
     user = User(userid, "from_session")
     login_user(user)
     return user
 
 @loginManager.request_loader
 def load_user(request):
+    """Request handler for an user login"""
     password = request.form.get("password")
     login = request.form.get("login")
+    
+    # invalid or no credentials
     if not password: password = None
     if not login: login = None
-
     if password is None or login is None:
         return None
 
@@ -137,6 +98,7 @@ def load_user(request):
     if login not in config["admin"].users:
         return None
 
+    # admin user login
     if config[login]["password"] == password:
         user = User(login, password)
         login_user(user)
@@ -147,6 +109,7 @@ def load_user(request):
 @app.route("/logout/")
 @login_required
 def logout():
+    """Logout the user and destroy session"""
     logout_user()
     session.clear()
     return redirect("/")
@@ -154,23 +117,30 @@ def logout():
 @app.route("/admin/", methods=["GET", "POST"])
 @login_required
 def admin():
+    """Show admin interface to add/remove/edit users"""
+    # TODO: mmh, what if I choose an login equal to the admin user-login-name
     if current_user.id != config["admin"]["login"]:
         return "No access!"
 
-    cfgDir = "config"
+    # check for config dir, create if necassary
+    cfgDir = config["admin"]["config_directory"]
     if not os.path.exists(cfgDir):
         os.mkdir(cfgDir)
 
     error = []
+    # add user config
     if "add" in request.args:
         login = request.form.get("login")
         password = request.form.get("password")
         if login and password:
             fn = "{}/{}.cfg".format(cfgDir,login)
+            print len(config["admin"].users), config["admin"]["paranoid.max_users"]
             if os.path.exists(fn):
                 error.append("user already exists")
             elif login.find(" ") != -1:
                 error.append("no whitespaces allowed in username")
+            elif len(config["admin"].users) > config["admin"]["paranoid.max_users"]:
+                error.append("server is configured to not allow any more users!")
             else:
                 f = open(fn, "w")
                 f.write("[config]\n")
@@ -182,7 +152,7 @@ def admin():
                 values = {}
                 values["password"] = password
                 values["timeout"] = str(10)
-                values["file"] = os.path.join(config["admin"]["config_directory"], "{}.cfg".format(login))
+                values["file"] = os.path.join(cfgDir, "{}.cfg".format(login))
                 values["login"] = login
                 cfg = UserConfig(values, True)
                 cfg.setLogPath(config["admin"]["log_directory"])
@@ -190,7 +160,8 @@ def admin():
                 config["admin"].users.append(login)
 
                 print "add user {} with password {}".format(login, password)
-    
+
+    # delete user config
     if "del" in request.args:
         if "login" in request.args:
             login = request.args["login"]
@@ -200,23 +171,27 @@ def admin():
                 if login and os.path.exists(fn):
                     os.unlink(fn)
 
-    cfgs = [ f[:-4] for f in os.listdir(cfgDir) if os.path.isfile(os.path.join(cfgDir,f)) ]
+    # every file inside the config-dir is an user-config-file ? mmmh, 
+    cfgs = [ f[:-4] for f in os.listdir(cfgDir) \
+            if os.path.isfile(os.path.join(cfgDir, f)) ]
     return render_template("admin.html", users=cfgs, error=error)
 
 @app.route("/settings/", methods=["GET", "POST"])
 @login_required
 def settings():
-
+    """Access and modify the user-specific config, i.e., irc-server config(s)"""
     values = {}
     error = []
+    # remove server entry
     if "del" in request.args:
         if "server" in request.args:
             server = request.args["server"]
             config[current_user.id].removeServer(server)
 
-    else:
+    # add new server entry
+    elif request.method == "POST":
         names = ["name", "server", "nick", "port", "channel"]
-
+        # check field contents
         for n in names:
             values[n] = request.form.get(n)
             if values[n] is None:
@@ -226,42 +201,57 @@ def settings():
             if not values[n]:
                 error.append("missing value for field {}".format(n))
 
+        # check, if server/host is allowed due to restrictions
+        asrv = config["admin"]["paranoid.allow_servers"]
+        if asrv and not any(re.match("^" + pat + "$", values["server"]) for pat in asrv):
+            error.append("Server is configured to accept only specific hosts")
+            error.append("The chosen one does not match!")
+            
         if len(values) and not len(error):
             print "add new server {}".format(values["name"])
             if config[current_user.id].addNewServer(values):
-                config[current_user.id].srv[values["name"]]["bouncer"] = PyIrcBouncer(config[current_user.id], values["name"])
-                start_new_thread(config[current_user.id].srv[values["name"]]["bouncer"].start, ())
+                
+                config[current_user.id].srv[values["name"]]["bouncer"] = \
+                        PyIrcBouncer(config[current_user.id], values["name"])
+                # start bouncer thread
+                start_new_thread(config[current_user.id].srv[
+                    values["name"]]["bouncer"].start, ())
+
                 values = {}
             else:
                 error.append("failed to parse values!")
         
-    return render_template("settings.html", cfg=config[current_user.id], error=error, values=values)
+    return render_template("settings.html", cfg=config[current_user.id], 
+            error=error, values=values)
 
 @app.route("/load/", methods=["POST"])
 @login_required
 def protected():
-    # maybe show settings page here, but take first 
-    # server / channel to show something.
-    # could be better
-    #return render_template("settings.html", current_user=current_user, cfg=config)
+    """Called directly after login, might be the place to add some security :D"""
 
     if current_user.id == config["admin"]["login"]:
         return redirect("/admin/")
     
+    if current_user.id not in config:
+        return redirect("/")
+
     servers = config[current_user.id].servers
     if not len(servers):
         error = []
         values = {}
-        return render_template("settings.html", cfg=config[current_user.id], error=error, values=values)
+        return render_template("settings.html", cfg=config[current_user.id], \
+                error=error, values=values)
 
     server = servers[0]
     channel = config[current_user.id].server(server, "channel")[0][1:]
     adr = "/channel/{}/{}".format(server, channel)
     return redirect(adr)
 
+# TODO: why also 'GET' ... 'POST' seems enough and more obvious for 'posting'
 @app.route("/send", methods = ['POST', 'GET'])
 @login_required
 def send():
+    """Receiving user data/msg -> forward to irc server"""
     if request.method == 'POST':
         if request.form["msg"] and \
             request.form["server"] and \
@@ -279,6 +269,7 @@ def send():
 @app.route("/channel/<server>/<channel>")
 @login_required
 def show_channel(server=None, channel=None):
+    """Render a single 'channel' chat-log on a given 'server'. FIXME: enc?"""
     if server is None or channel is None:
         return "error"
 
@@ -303,44 +294,49 @@ def show_channel(server=None, channel=None):
                 nl = line
             log.append(nl)
 
+    # either jsonify the output to be handled by jQuery or render a HTML page
     json = request.args.get('json', None)
     if json is not None:
         return jsonify(log=log)
-    else:
-        return render_template("channel.html", server=server, channel=channel, log=log, cfg=config[current_user.id])
+
+    return render_template("channel.html", server=server, channel=channel, 
+                                           log=log, cfg=config[current_user.id])
 
 if __name__ == "__main__":
-    # TODO: replace logs path with path from config?
-    if not os.path.exists("logs"):
-        print "create log path"
-        os.mkdir("logs")
-
+    
     # read configuration
     config = {}
+    
     # admin configuration
     config["admin"] = CoreConfig("pyWebIRC.cfg")
+
+    # setup logs
     logPath = config["admin"]["log_directory"]
     if not os.path.exists(logPath):
         os.mkdir(logPath)
         print "create log path {}".format(logPath)
 
-    # user configs
+    # find & setup user config dir
     cfgDir = config["admin"]["config_directory"]
     if not os.path.exists(cfgDir):
         os.mkdir(cfgDir)
 
-    cfgs = [ f for f in os.listdir(cfgDir) if os.path.isfile(os.path.join(cfgDir,f)) ]
+    # load user config is there are any
+    cfgs = [ f for f in os.listdir(cfgDir) \
+            if os.path.isfile(os.path.join(cfgDir,f)) ]
     for cf in cfgs:
         conf = UserConfig(os.path.join(cfgDir, cf))
         conf.setLogPath(logPath)
         config[conf.login] = conf
         config["admin"].users.append(conf.login)
 
+    # bring up each user's bouncer
     for user in config["admin"].users:
         print "load server settings for user {}".format(user)
         for srv in config[user].servers:
             print "start server {}".format(srv)
             config[user].srv[srv]["bouncer"] = PyIrcBouncer(config[user], srv)
+            # start bouncer thread
             start_new_thread(config[user].srv[srv]["bouncer"].start, ())
             cnt = 0
             while not config[user].srv[srv]["bouncer"].connected:
@@ -349,14 +345,16 @@ if __name__ == "__main__":
                 cnt += 1
                 if cnt > 5:
                     print "failed to connect all channels."
-                    break
-    waiter = Waiter()
+                    break 
+    # login timeout handler ? TODO: include into 'UserManager' (tm)
+    waiter = Waiter(config["admin"])
 
-    app.debug = enableDebug
+    app.debug = True #enableDebug
     try:
         host = config["admin"]["host"]
         port = int(config["admin"]["port"])
     except:
         print "failed to parse host and port from config file!"
         sys.exit(1)
+    
     app.run(host=host, port=port)

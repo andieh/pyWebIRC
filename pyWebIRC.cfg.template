@@ -15,3 +15,17 @@ host = 127.0.0.1
 
 # port of the flask server
 port = 5001
+
+### various user and connection restrictions
+[paranoid]
+# allow connections only to servers matching this regex (default: no restrictions)
+#allow_servers = my.server.[a-zA-Z0-9-_]+.de 
+
+# maximum user count inside database (default: unlimited)
+max_users = 2
+
+# maximum requests to the server by one user, in one sec, minute, hour (default: all unlimited)
+# TODO: implement ;)
+#max_requests_sec = 2.0
+#max_requests_min = 30.0
+#max_requests_hour = 1000.0

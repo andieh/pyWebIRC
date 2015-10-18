@@ -2,27 +2,123 @@ import ConfigParser
 import sys
 import os
 
-class CoreConfig:
+
+
+## TODO: maybe make access to config-vals attr-based instead of getitem-based
+## now:         config["admin"]["stuff"]
+## maybe later: config.admin.stuff
+
+class BaseConfig:
+    """
+    Base for configuration handling.
+    Allows dispatching into 'deeper' hierarchies through __getitem__.
+    TODO: also apply to 'UserConfig' -> see TODO below...
+    """
+    section = None
+    delim = "."
+
     def __init__(self, cfg):
+        self.dispatch = {}
+        self.vals = {}
+        self.defaults = {}
+
         self.configFile = cfg
-        login = None
-        password = None
         self.config = ConfigParser.ConfigParser()
-        self.users = []
+        
         if not self.config.read(self.configFile):
             print "failed to read config file {}".format(self.configFile)
             sys.exit(1)
 
-        login = self.config.get("config", "login")
-        password = self.config.get("config", "password")
+    def __contains__(self, key):
+        """
+        Used for the 'in' operator, returns 'True' if 'key' in regualar 
+        config, NOT if just a default is available
+        """
+        return key in self.vals or self.config.has_option(self.section, key)
+
+    def __getitem__(self, key):
+        """
+        Key in'self.dispatch'? redirect/dispatch to value of 
+        dict, anything _after_the 'cls.delim' 
+        """
+
+        # dispatch, if applicable
+        toks = key.split(self.delim)
+        if self.delim in key and toks[0] in self.dispatch:
+            return self.dispatch[toks[0]][self.delim.join(toks[1:])]
+
+        # handle this scope
+        if key in self.vals:
+            return self.vals[key]
+        if key not in self and key in self.defaults:
+            return self.defaults[key]
+        return self.read_config(self.section, key)
+
+    def read_config(self, section, key):
+        """Return option 'key' from [section] from the actual config file"""
+        if not self.config.has_option(section, key):
+            return None
+        return self.config.get(section, key)
+
+    def set_default(self, key, val):
+        """Returns 'val' for 'key', if 'key' was not explicitly set"""
+        self.defaults[key] = val
+
+    def set_val(self, key, val):
+        """Returns 'val' in any case (overwrites), instead of the original one"""
+        self.vals[key] = val 
+
+    def process_val(self, key, func):
+        """Applies 'func' on value 'key' (if existing), save it to 'self.vals'"""
+        if key in self:
+            self.vals[key] = func(self.read_config(self.section, key))
+
+class ParanoidConfig(BaseConfig):
+    """
+    Section: [paranoid]
+    Vars: allow_servers, max_requests_{sec,min,hour}, login_timeout
+    """
+    section = "paranoid"
+    
+    def __init__(self, cfg):
+        BaseConfig.__init__(self, cfg)
+
+        self.set_default("login_timeout", 1.0)
+        self.set_default("max_requests_sec", 6.0)
+        self.set_default("max_requests_min", 120.0)
+        self.set_default("max_requests_hour", 3600.0)
+        self.set_default("max_users", 1000)
+
+        self.process_val("max_users", int)
+        self.process_val("allow_servers", lambda x: x.split(","))
+
+        
+class CoreConfig(BaseConfig):
+    """
+    Section: [config]
+    Vars: login, password, log_directory, config_directory, host, port
+    """
+    section = "config" 
+
+    def __init__(self, cfg):
+        BaseConfig.__init__(self, cfg)
+
+        self.dispatch = {ParanoidConfig.section: ParanoidConfig(cfg)}
+
+        login = None
+        password = None
+        self.users = []
+
+        login = self.config.get(self.section, "login")
+        password = self.config.get(self.section, "password")
 
         if login is None or password is None:
             print "please set admin login and password"
             sys.exit(1)
 
-    def __getitem__(self, key):
-        return self.config.get("config", key)
-
+# mmh somehow not consistent with CoreConfig, avoid using BaseConfig for now...
+# TODO: move user managment into pyWebIRC::User and this should only provide the
+#       configurations for them, nothing more...
 class UserConfig:
     def __init__(self, cfg, new=False):
         self.servers = []
