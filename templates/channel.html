@@ -16,6 +16,9 @@ function reload() {
 };
 
 function send() {
+	$( "#msg" ).prop("disabled", true);
+
+	/* ajax post request incoming */
 	$.post( "/send", {
 	  channel: "{{ channel }}",
 	  server: "{{ server }}",
@@ -23,7 +26,13 @@ function send() {
 	}, function (data) {
 		reload();
 		$( "#msg" ).val("");
+                $( "#msg" ).prop("disabled", false);
+	
+	})
+	.always(function() {
+               $( "#msg" ).prop("disabled", false);
 	});
+
 };
 
 $(function() {
@@ -31,9 +40,11 @@ $(function() {
 	interval_ref = setInterval(reload, refresh_time*1000);
 	/*var retime = parseInt($( "#refreshlen" ).value, 10);*/
 	$( "#msg" ).keydown(function(event){
-            if(event.keyCode == 13)
-		send();
+	/* avoid double send, do not send if #msg is disabled */
+	if(event.keyCode == 13 && ! $( "#msg" ).prop("disabled") )
+     	   send(); 
 	});
+
 	$( "#msg" ).focus();
 });
 </script>
