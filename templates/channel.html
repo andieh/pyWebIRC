@@ -3,6 +3,35 @@
 <head>
 	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js">
         </script>
+	<style>
+	body {
+	     font-family: monospace;
+	     font-size: 12px;
+	}
+	.gen {
+	     margin: 1px;
+	     padding: 2px;
+	     border-width: 1px;
+	     border-style: solid;
+	     border-color: #dde;
+	     background: #eee;
+	     padding-left: 5px;
+	     padding-right: 5px;
+	}
+	input {
+             outline-width: 0;
+             
+	}
+	#log .gen{
+	     margin-right: 11px;
+	     height: 300px;
+	     overflow: auto;
+	}
+	#msg {
+     	    width: 94%;
+	}
+
+	</style>
 <script type="text/javascript">
 var loglen = 20;
 var refresh_time = 5;
@@ -68,11 +97,11 @@ $(function() {
   || history: <input type="text" name="loglen" id="loglen" value="20" />
   </p>
   <hr/>
-  <div id=log> </div>
+  <div class=gen id=log > </div>
   <hr/>
   <p>
-   Msg: <input type="text" name="msg" id="msg" />
-    <input type="button" onclick="send()" value="Send">
+   <input type="button" class=gen onclick="send()" value="Send"> <input class=gen type="text" name="msg" id="msg" autocomplete="off" />
+    
   </p>
 {% else %}
   <h1>No channel selected!</h1>
