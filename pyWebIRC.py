@@ -10,13 +10,14 @@ from flask.ext.login import LoginManager, UserMixin, login_required, \
 import re
 import os
 import time
-import math
+import hashlib
 from thread import start_new_thread
 
 from modules.config import UserConfig, CoreConfig
 from modules.bouncer import PyIrcBouncer
 
 from utils import Waiter, IP
+from user import User
 
 _paragraph_re = re.compile(r'(?:\r\n|\r|\n){2,}')
 app = Flask(__name__)
@@ -39,21 +40,6 @@ if not enableDebug:
     import logging
     log = logging.getLogger('werkzeug')
     log.setLevel(logging.ERROR)
-
-class User(UserMixin):
-    """User-profile-data storage"""
-    user_database = {}
-
-    def __init__(self, username, password):
-        self.id = username
-        self.password = password
-
-    @classmethod
-    def get(cls,id):
-        return cls.user_database.get(id)
-
-    def __repr__(self):
-        return "<UserData login:'{}' pass:'{}'>".format(self.id, self.password)
 
 
 # TODO: move views to an actual views.py file instead of littering the main exe
@@ -80,16 +66,17 @@ def load_user(request):
     """Request handler for an user login"""
     password = request.form.get("password")
     login = request.form.get("login")
-    
+    phash = User.get_password_hash(password)
+
     # invalid or no credentials
     if not password: password = None
     if not login: login = None
     if password is None or login is None:
         return None
-
+    
     # check for admin account
     ad = config["admin"]
-    if login == ad["login"] and password == ad["password"]:
+    if login == ad["login"] and phash == ad["password"]:
         user = User(ad["login"], ad["password"])
         login_user(user)
         return user
@@ -99,8 +86,8 @@ def load_user(request):
         return None
 
     # admin user login
-    if config[login]["password"] == password:
-        user = User(login, password)
+    if config[login]["password"] == phash:
+        user = User(login, phash)
         login_user(user)
         return user
 
@@ -133,9 +120,12 @@ def admin():
         login = request.form.get("login")
         password = request.form.get("password")
         if login and password:
+            phash = User.get_password_hash(password)
+
             fn = "{}/{}.cfg".format(cfgDir,login)
-            print len(config["admin"].users), config["admin"]["paranoid.max_users"]
-            if os.path.exists(fn):
+            if phash is None:
+                error.append("Could not generate password hash")
+            elif os.path.exists(fn):
                 error.append("user already exists")
             elif login.find(" ") != -1:
                 error.append("no whitespaces allowed in username")
@@ -144,13 +134,13 @@ def admin():
             else:
                 f = open(fn, "w")
                 f.write("[config]\n")
-                f.write("password = {}\n".format(password))
+                f.write("password = {}\n".format(phash))
                 f.write("timeout = 10\n")
                 f.write("\n")
                 f.close()
 
                 values = {}
-                values["password"] = password
+                values["password"] = phash
                 values["timeout"] = str(10)
                 values["file"] = os.path.join(cfgDir, "{}.cfg".format(login))
                 values["login"] = login
@@ -159,14 +149,11 @@ def admin():
                 config[login] = cfg
                 config["admin"].users.append(login)
 
-                print "add user {} with password {}".format(login, password)
-
     # delete user config
     if "del" in request.args:
         if "login" in request.args:
             login = request.args["login"]
             if login:
-                print "delete user {}".format(login)
                 fn = "{}/{}.cfg".format(cfgDir, login)
                 if login and os.path.exists(fn):
                     os.unlink(fn)
@@ -229,6 +216,7 @@ def settings():
 def protected():
     """Called directly after login, might be the place to add some security :D"""
 
+    
     if current_user.id == config["admin"]["login"]:
         return redirect("/admin/")
     
