@@ -95,7 +95,7 @@ def load_user(request):
     return None
 
 @app.route("/logout/")
-@login_required
+#@login_required
 def logout():
     """Logout the user and destroy session"""
     logout_user()
