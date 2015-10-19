@@ -76,7 +76,8 @@ def load_user(request):
     
     # check for admin account
     ad = config["admin"]
-    if login == ad["login"] and phash == ad["password"]:
+    # i really don't understand your password hashing style :D
+    if login == ad["login"] and phash == User.get_password_hash(ad["password"]):
         user = User(ad["login"], ad["password"])
         login_user(user)
         return user
@@ -216,7 +217,6 @@ def settings():
 def protected():
     """Called directly after login, might be the place to add some security :D"""
 
-    
     if current_user.id == config["admin"]["login"]:
         return redirect("/admin/")
     
