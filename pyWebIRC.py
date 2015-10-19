@@ -337,7 +337,7 @@ if __name__ == "__main__":
     # login timeout handler ? TODO: include into 'UserManager' (tm)
     waiter = Waiter(config["admin"])
 
-    app.debug = True #enableDebug
+    app.debug = enableDebug
     try:
         host = config["admin"]["host"]
         port = int(config["admin"]["port"])
