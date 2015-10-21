@@ -18,6 +18,11 @@
 	     padding-left: 5px;
 	     padding-right: 5px;
 	}
+	.w100 {
+	     overflow: hidden;
+             white-space: nowrap;
+	     /*width:100%;*/
+	}
 	input {
              outline-width: 0;
              
@@ -28,8 +33,13 @@
 	     overflow: auto;
 	}
 	#msg {
-     	    width: 94%;
+     	    width: 100%;
+	    
 	}
+	#send {
+	    width: 50px;
+	}
+	
 
 	</style>
 <script type="text/javascript">
@@ -99,10 +109,10 @@ $(function() {
   <hr/>
   <div class=gen id=log > </div>
   <hr/>
-  <p>
-   <input type="button" class=gen onclick="send()" value="Send"> <input class=gen type="text" name="msg" id="msg" autocomplete="off" />
+  <div class=w100>
+    <input type="button" class=gen onclick="send()" value="Send" id="send" /><input class=gen type="text" name="msg" id="msg" autocomplete="off" />
     
-  </p>
+  </div>
 {% else %}
   <h1>No channel selected!</h1>
 {% endif %}
