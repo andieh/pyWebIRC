@@ -272,15 +272,19 @@ def show_channel(server=None, channel=None):
         f.close()
 
         # do html editing in the renderer
+        # \TODO move this to css
         for line in l:
             line = line.encode("utf-8")
-            if line.startswith("*>"):
-                nl = "<i>{}</i>".format(line)
-            elif line.find(nick) != -1 and not line.startswith(nick):
-                nl = "<b>{}</b>".format(line)
+            ar = line.split(", ")
+            if len(ar) < 2:
+                continue
+            if ar[1].startswith("*>"):
+                nl = "<i>{}</i>".format(ar[1])
+            elif ar[1].find(nick) != -1 and not ar[1].startswith(nick):
+                nl = "<b>{}</b>".format(ar[1])
             else:
-                nl = line
-            log.append(nl)
+                nl = ar[1]
+            log.append("{}, {}".format(ar[0], nl))
 
     # either jsonify the output to be handled by jQuery or render a HTML page
     json = request.args.get('json', None)

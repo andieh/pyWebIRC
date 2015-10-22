@@ -5,6 +5,7 @@ import irc.strings
 
 import sys
 import os
+import time, datetime
 
 class PyIrcBouncer(irc.bot.SingleServerIRCBot):
     def __init__(self, cfg, name):
@@ -65,10 +66,14 @@ class PyIrcBouncer(irc.bot.SingleServerIRCBot):
         self.log(e.target, nick, msg)
 
     def log(self, channel, nick, msg):
-        w = "{}> {}".format(nick, msg.encode("utf-8"))
+        ts = int(time.time())
+        tstr = datetime.datetime.fromtimestamp(ts).\
+                strftime('%d-%m-%Y %H:%M:%S')
+        msg = msg.encode("utf-8")
+        w = "{}, {}> {}".format(ts, nick, msg)
         self.logfiles[channel].write("{}\n".format(w))
         self.logfiles[channel].flush()
-        print "[{}] {}".format(channel, w)
+        print "{} [{}] {}> {}".format(tstr, channel, nick, msg)
 
     def on_error(self, connection, event):
         print 15,
