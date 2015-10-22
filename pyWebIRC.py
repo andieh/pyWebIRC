@@ -275,7 +275,7 @@ def show_channel(server=None, channel=None):
         # \TODO move this to css
         for line in l:
             line = line.encode("utf-8")
-            ar = line.split(", ")
+            ar = line.split(", ", 1)
             if len(ar) < 2:
                 continue
             if ar[1].startswith("*>"):
