@@ -54,6 +54,13 @@ def main():
 def before_request():
     pass
 
+@loginManager.unauthorized_handler
+def unauthorized_callback():
+    print "damn stuff here..."
+    logout_user()
+    session.clear()
+    return redirect("/")
+    
 @loginManager.user_loader
 def load_user_from_session(userid):
     """Load user session using our UserManager (TODO: 'UserManager' :D)"""
