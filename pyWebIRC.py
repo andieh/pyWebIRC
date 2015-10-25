@@ -301,7 +301,7 @@ def show_channel(server=None, channel=None):
             else:
                 nl = ar[1]
 
-            tss = datetime.datetime.fromtimestamp(int(ar[0])).strftime("%d.%m.%Y-%H:%I")
+            tss = datetime.datetime.fromtimestamp(int(ar[0])).strftime("%d.%m.%Y-%H:%M")
             log.append("<span class=small>[{}]</span> {}".format(tss, nl))
 
     # get a user list
