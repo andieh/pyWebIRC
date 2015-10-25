@@ -28,4 +28,5 @@ a lot of todos:
 - More CSS (Themes?)
 - send commands to IRC server (/nick, /part, etc.)
 
+
 Feel free to contribute!!!
