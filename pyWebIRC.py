@@ -265,6 +265,10 @@ def send():
 @login_required
 def show_channel(server=None, channel=None):
     """Render a single 'channel' chat-log on a given 'server'. FIXME: enc?"""
+
+    #\TODO: log must be limited by length!
+    #       either in json or "full" mode.a
+    
     if server is None or channel is None:
         return "error"
 
@@ -298,13 +302,20 @@ def show_channel(server=None, channel=None):
                 nl = ar[1]
             log.append("{}, {}".format(ar[0], nl))
 
+    # get a user list
+    users = srv.getUsers(channel)
+    
     # either jsonify the output to be handled by jQuery or render a HTML page
     json = request.args.get('json', None)
     if json is not None:
-        return jsonify(log=log)
+        return jsonify(log=log, users=users)
 
-    return render_template("channel.html", server=server, channel=channel, 
-                                           log=log, cfg=config[current_user.id])
+    return render_template("channel.html", \
+            server=server, channel=channel, \
+            log=log, \
+            cfg=config[current_user.id], \
+            users=users\
+        )
 
 if __name__ == "__main__":
     

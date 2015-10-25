@@ -16,6 +16,8 @@ class PyIrcBouncer(irc.bot.SingleServerIRCBot):
         self.port = cfg.server(name, "port")
         self.server = cfg.server(name, "server")
 
+        self.users = {}
+
         irc.bot.SingleServerIRCBot.__init__(self, \
                 [(self.server, self.port)], \
                 self.nick, \
@@ -49,6 +51,11 @@ class PyIrcBouncer(irc.bot.SingleServerIRCBot):
                 time.sleep(1)
                 print str(e)
 
+    def getUsers(self, channel=None):
+        if channel is None:
+            return self.users
+        else:
+            return self.users["#{}".format(channel)]
 
     def on_welcome(self, c, e):
         for channel in self.channel:
@@ -57,6 +64,10 @@ class PyIrcBouncer(irc.bot.SingleServerIRCBot):
             # log file
             fn = os.path.join(self.logpath, "{}.log".format(channel))
             self.logfiles[channel] = open(fn, "a")
+            
+            # keep a list of users in this channel
+            self.users[channel] = []
+
         # connected, maybe add some error handling here...
         self.connected = True
 
@@ -107,7 +118,14 @@ class PyIrcBouncer(irc.bot.SingleServerIRCBot):
         print event.source, event.target
 
     def on_join(self, connection, event):
-        self.log(event.target, "*", "{} enters the room!".format(self.get_nick(event.source)))
+        channel = event.target
+        nick = self.get_nick(event.source)
+        self.log(channel, "*", "{} enters the room!".format(nick))
+        
+        if nick not in self.users[channel]:
+            self.users[channel].append(nick)
+        else:
+            print "warning: user {} already in list?".format(nick)
 
     def on_kick(self, connection, event):
         print 13,
@@ -120,7 +138,17 @@ class PyIrcBouncer(irc.bot.SingleServerIRCBot):
         print event.source, event.target
 
     def on_part(self, connection, event):
-        self.log(event.target, "*", "{} leaves the room!".format(self.get_nick(event.source)))
+        channel = event.target
+        nick = self.get_nick(event.source)
+
+        self.log(channel, "*", "{} leaves the room!".format(nick))
+        
+        if nick in self.users[channel]:
+            self.users[channel].remove(nick)
+        else:
+            print "warning: user {} was not on this server\
+                    (but he / she should)!".format(nick)
+
 
     def on_ping(self, connection, event):
         #print "receive ping from server {}".format(event.target)
@@ -146,7 +174,7 @@ class PyIrcBouncer(irc.bot.SingleServerIRCBot):
     def on_quit(self, connection, event):
         user = self.get_nick(event.source)
         for chan in self.channel:
-            self.log(chan, "*", "{} leaves the room!".format(user))
+            self.log(chan, "*", "{} leaves the server!".format(user))
 
     def on_invite(self, connection, event):
         print 5,
