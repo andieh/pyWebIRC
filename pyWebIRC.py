@@ -56,7 +56,7 @@ def before_request():
 
 @loginManager.unauthorized_handler
 def unauthorized_callback():
-    print "damn stuff here..."
+    # check when exactly these function is called.
     logout_user()
     session.clear()
     return redirect("/")
@@ -281,7 +281,12 @@ def show_channel(server=None, channel=None):
         # do html editing in the renderer
         # \TODO move this to css
         for line in l:
-            line = line.encode("utf-8")
+            try:
+                line = line.encode("utf-8")
+            except Exception, e:
+                print "failed to decode line: {}".format(line)
+                continue
+
             ar = line.split(", ", 1)
             if len(ar) < 2:
                 continue

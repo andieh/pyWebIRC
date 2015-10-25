@@ -2,6 +2,7 @@
 
 import irc.bot
 import irc.strings 
+import irc.buffer
 
 import sys
 import os
@@ -20,13 +21,34 @@ class PyIrcBouncer(irc.bot.SingleServerIRCBot):
                 self.nick, \
                 self.nick)
 
+        # i don't know, if this is a huge bug in 
+        # the irc lib implementation?
+        # the buffer only decodes utf-8 streams, 
+        # and raises an exeption otherwise. this 
+        # exeption can not be catched?
+        # replace default buffer to Lenient Buffer,
+        # which tries to decode it in latin-1 instead
+        # of utf-8.
+        self.connection.buffer_class = irc.buffer.LenientDecodingLineBuffer
+
         # check for log file
         self.logpath = os.path.join(cfg["logPath"], self.server)
         if not os.path.exists(self.logpath):
             print "create log path {}".format(self.logpath)
             os.mkdir(self.logpath)
         self.logfiles = {}
-        
+
+    def start(self):
+        # is there a running variable?
+        # maybe move this to a watchdog function?
+        while 1:
+            try:
+                super(PyIrcBouncer, self).start()
+            except Exception, e:
+                print "this can't be true. the irc bouncer need a restart!"
+                time.sleep(1)
+                print str(e)
+
 
     def on_welcome(self, c, e):
         for channel in self.channel:
@@ -66,14 +88,18 @@ class PyIrcBouncer(irc.bot.SingleServerIRCBot):
         self.log(e.target, nick, msg)
 
     def log(self, channel, nick, msg):
-        ts = int(time.time())
-        tstr = datetime.datetime.fromtimestamp(ts).\
-                strftime('%d-%m-%Y %H:%M:%S')
-        msg = msg.encode("utf-8")
-        w = "{}, {}> {}".format(ts, nick, msg)
-        self.logfiles[channel].write("{}\n".format(w))
-        self.logfiles[channel].flush()
-        print "{} [{}] {}> {}".format(tstr, channel, nick, msg)
+        try:
+            ts = int(time.time())
+            tstr = datetime.datetime.fromtimestamp(ts).\
+                    strftime('%d-%m-%Y %H:%M:%S')
+            msg = msg.encode("utf-8")
+            w = "{}, {}> {}".format(ts, nick, msg)
+            self.logfiles[channel].write("{}\n".format(w))
+            self.logfiles[channel].flush()
+            print "{} [{}] {}> {}".format(tstr, channel, nick, msg)
+        except Exection, e:
+            print "failed to log received IRC message, error was:"
+            print str(e)
 
     def on_error(self, connection, event):
         print 15,
