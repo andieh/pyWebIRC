@@ -196,6 +196,11 @@ class PyIrcBouncer(irc.bot.SingleServerIRCBot):
         print "topic: {}".format(str(event.arguments))
         print event.source, event.target
 
+    def on_namreply(self, connection, event):
+        channel = event.arguments[1]#[1:]
+        users = event.arguments[2]
+        self.users[channel] = users.split(" ")
+
     def on_nick(self, connection, event):
         nick = self.get_nick(event.source)
         nNick = event.target
