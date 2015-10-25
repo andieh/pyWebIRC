@@ -76,7 +76,9 @@ var interval_ref = "";
 
 var timer="";
 var isBlurred=false;
-var lastAction=parseInt(Date.now() / 1000);
+var lastMessageTs=parseInt(Date.now() / 1000);
+var lastMessageRead=lastMessageTs
+var newMessageSent = true;
 
 function reload() {
         var requestBlurr = false;
@@ -91,19 +93,25 @@ function reload() {
            var last = log.slice(-1)[0].match(/(\[.*\])/g)[0];
            last = last.substr(1,last.length-2); 
            tss = last.split(" ").join("T");
-           var date = new Date(tss);
-           var ts = date.getTime() / 1000;
-           var diff = ts - lastAction;
-           if (diff > 0) {
+           lastMessageTs = new Date(tss).getTime() / 1000;
+           var diff = lastMessageTs - lastMessageRead;
+           //console.log("last Message Ts: " + lastMessageTs);
+           //console.log("last read:       " + lastMessageRead);
+           //console.log("diff:            " + diff);
+           if (diff > 5) {
                requestBlurr = true;
            }
            
-           if ((!isBlurred) && requestBlurr) {
-             console.log("start this shit");
+           if ((!isBlurred) && requestBlurr && (!newMessageSent)) {
 	     isBlurred = true;
              timer=window.setInterval(function() {
                document.title = document.title == "pyWebIRC" ? "<*> pyWebIRC" : "pyWebIRC";
              }, 1000);
+           }
+           
+           if (newMessageSent) {
+             newMessageSent = false;
+             lastMessageRead = lastMessageTs;
            }
 	});
 };
@@ -127,6 +135,7 @@ function send() {
 	       $( "#msg" ).focus();
 	});
 
+        newMessageSent = true;
 };
 
 $(function() {
@@ -143,6 +152,7 @@ $(function() {
 });
 
 function stopBlink() {
+  lastMessageRead = lastMessageTs;
   isBlurred = false;
   document.title = "pyWebIRC";
   clearInterval(timer);
@@ -150,12 +160,14 @@ function stopBlink() {
 
 $(window).on("focus",function() { 
   stopBlink();
-  lastAction = parseInt(Date.now() / 1000);
 });
 			
 $(document).mousemove(function(event) {
   stopBlink();
-  lastAction = parseInt(Date.now() / 1000);
+});
+
+$(document).keypress(function(event) {
+  stopBlink();
 });
 
 </script>
