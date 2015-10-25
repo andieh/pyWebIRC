@@ -30,19 +30,35 @@
 	     border-width: 1px;
 	     border-style: solid;
 	     border-color: #dde;
-	     background: #eee;
+         background: #eee;
 	     padding-left: 5px;
 	     padding-right: 5px;
 	}
 	.w100 {
 	     overflow: hidden;
-             white-space: nowrap;
+         white-space: nowrap;
+         background: #eee;
 	     /*width:100%;*/
 	}
-	#log .gen{
-	     margin-right: 11px;
-	     height: 300px;
-	     overflow: auto;
+    .small {
+         font-size: 1em;
+         color: #ff00ff;
+    }
+    .w100w {
+         overflow: hidden;
+         white-space: nowrap;
+    }
+    #user{
+         float: left;
+         width: 150px;
+         height: 100%;
+         border-color: #000;
+         background: #ccc;
+         margin: 5px;
+    }
+	#log{
+         float: left;
+         margin-left: 10px;
 	}
 	#msg {
      	    width: 100%;
@@ -51,7 +67,6 @@
 	#send {
 	    width: 50px;
 	}
-	
 
 	</style>
 <script type="text/javascript">
@@ -63,6 +78,7 @@ function reload() {
 	loglen = parseInt($( "#loglen" ).val(), 10) + 1;
 	$.getJSON("/channel/{{ server }}/{{ channel }}?json=true", function( data ) {
 	   $( "#log" ).html( data["log"].slice(-loglen).join("<br />") );
+	   $( "#user" ).html( 'Members:<br/>'+data["users"].slice().join("<br />") );
 	});
 };
 
@@ -119,9 +135,12 @@ $(function() {
   || history: <input type="text" name="loglen" id="loglen" value="20" />
   </p>
   <hr/>
-  <div class=gen id=log > </div>
-  <hr/>
   <div class=w100>
+    <div class=gen id=user >Members:<br/></div>
+    <div class=gen id=log > </div>
+  </div>
+  <hr/>
+  <div class=w100w>
     <input type="button" class=gen onclick="send()" value="Send" id="send" /><input class=gen type="text" name="msg" id="msg" autocomplete="off" />
     
   </div>

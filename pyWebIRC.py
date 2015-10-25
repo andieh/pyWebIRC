@@ -9,7 +9,7 @@ from flask.ext.login import LoginManager, UserMixin, login_required, \
 
 import re
 import os
-import time
+import time, datetime
 import hashlib
 from thread import start_new_thread
 
@@ -300,7 +300,9 @@ def show_channel(server=None, channel=None):
                 nl = "<b>{}</b>".format(ar[1])
             else:
                 nl = ar[1]
-            log.append("{}, {}".format(ar[0], nl))
+
+            tss = datetime.datetime.fromtimestamp(int(ar[0])).strftime("%d.%m.%Y-%H:%I")
+            log.append("<span class=small>[{}]</span> {}".format(tss, nl))
 
     # get a user list
     users = srv.getUsers(channel)
