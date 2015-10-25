@@ -143,6 +143,8 @@ class PyIrcBouncer(irc.bot.SingleServerIRCBot):
 
         self.log(channel, "*", "{} leaves the room!".format(nick))
         
+        if not channel.startswith("#"):
+            channel = "#{}".format(channel)
         if nick in self.users[channel]:
             self.users[channel].remove(nick)
         else:
