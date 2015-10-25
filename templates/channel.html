@@ -74,11 +74,37 @@ var loglen = 20;
 var refresh_time = 5;
 var interval_ref = "";
 
+var timer="";
+var isBlurred=false;
+var lastAction=parseInt(Date.now() / 1000);
+
 function reload() {
+        var requestBlurr = false;
 	loglen = parseInt($( "#loglen" ).val(), 10) + 1;
 	$.getJSON("/channel/{{ server }}/{{ channel }}?json=true", function( data ) {
-	   $( "#log" ).html( data["log"].slice(-loglen).join("<br />") );
+           var log = data["log"];
+	   $( "#log" ).html( log.slice(-loglen).join("<br />") );
 	   $( "#user" ).html( 'Members:<br/>'+data["users"].slice().join("<br />") );
+           
+           // we need to think about how to get the logs here...
+           // this conversion is crap and should not be needed.
+           var last = log.slice(-1)[0].match(/(\[.*\])/g)[0];
+           last = last.substr(1,last.length-2); 
+           tss = last.split(" ").join("T");
+           var date = new Date(tss);
+           var ts = date.getTime() / 1000;
+           var diff = ts - lastAction;
+           if (diff > 0) {
+               requestBlurr = true;
+           }
+           
+           if ((!isBlurred) && requestBlurr) {
+             console.log("start this shit");
+	     isBlurred = true;
+             timer=window.setInterval(function() {
+               document.title = document.title == "pyWebIRC" ? "<*> pyWebIRC" : "pyWebIRC";
+             }, 1000);
+           }
 	});
 };
 
@@ -115,6 +141,23 @@ $(function() {
 
 	$( "#msg" ).focus();
 });
+
+function stopBlink() {
+  isBlurred = false;
+  document.title = "pyWebIRC";
+  clearInterval(timer);
+};
+
+$(window).on("focus",function() { 
+  stopBlink();
+  lastAction = parseInt(Date.now() / 1000);
+});
+			
+$(document).mousemove(function(event) {
+  stopBlink();
+  lastAction = parseInt(Date.now() / 1000);
+});
+
 </script>
 	<title>Hello from Flask</title>
 </head>
