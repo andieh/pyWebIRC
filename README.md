@@ -25,8 +25,7 @@ Now login as the admin user and add as much user you need. Each user can specify
 # TODO
 a lot of todos:
 - move flask stuff to class
-- add CSS
-- error handling!
+- More CSS (Themes?)
 - send commands to IRC server (/nick, /part, etc.)
 
 Feel free to contribute!!
