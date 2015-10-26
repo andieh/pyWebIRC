@@ -11,12 +11,14 @@ Timeout: {{ cfg["timeout"] }}
 <hr/>
 {%- for srv in cfg.servers -%}
 <form action="/settings/" method="POST">
+<input type="hidden" name="type" value="update"/>
+<input type="hidden" name="uname" value="{{ srv }}"/>
 <p><b>{{ cfg.srv[srv].name }}</b>
 connect || 
 disconnect || 
 <a href="?del&server={{ srv }}">delete</a><br/>
-Server: <input type="text" name="server" value="{{ cfg.srv[srv].server }}"/><br/>
-Port: <input type="text" name="port" value="{{ cfg.srv[srv].port }}"/><br/>
+Server: <input type="text" name="userver" value="{{ cfg.srv[srv].server }}"/><br/>
+Port: <input type="text" name="uport" value="{{ cfg.srv[srv].port }}"/><br/>
 Channels:<br/>
 {%- if cfg.srv[srv].channel != [''] -%}
 
@@ -25,8 +27,8 @@ Channels:<br/>
 [<a href="?del&server={{ srv }}&channel={{ c[1:] }}">delete</a>]<br/>
 {%- endfor -%}
 {%- endif -%}
-add channel: <input type="text" name="channel"/><br/>
-Nick: <input type="text" name="nick" value="{{ cfg.srv[srv].nick }}"/><br/>
+add channel: <input type="text" name="uchannel"/><br/>
+Nick: <input type="text" name="unick" value="{{ cfg.srv[srv].nick }}"/><br/>
 </p>
 <input type="submit" value="change"/>
 </form>
@@ -41,6 +43,7 @@ Nick: <input type="text" name="nick" value="{{ cfg.srv[srv].nick }}"/><br/>
 </font>
 {%- endif -%}
 <form action="/settings/" method="POST">
+	<input type="hidden" name="type" value="newServer"/>
 	Name: <input type="text" name="name" value="{{ values["name"] }}"/><br/>
 	Server: <input type="text" name="server" value="{{ values["server"] }}"/><br/>
 	Port: <input type="text" name="port" value="{{ values["port"] }}"/><br/>

@@ -192,38 +192,52 @@ def settings():
             config[current_user.id].srv[server]["channel"].remove("#{}".format(channel))
 
     # add new server entry
-    elif request.method == "POST":
-        names = ["name", "server", "nick", "port", "channel"]
-        # check field contents
-        for n in names:
-            values[n] = request.form.get(n)
-            if values[n] is None:
-                error = []
-                values = {}
-                break
-            if not values[n]:
-                error.append("missing value for field {}".format(n))
+    elif request.method == "POST" and request.form.get("type"):
+        t = request.form.get("type")
+        if t == "newServer":
+            names = ["name", "server", "nick", "port", "channel"]
+            # check field contents
+            for n in names:
+                values[n] = request.form.get(n)
+                if values[n] is None:
+                    error = []
+                    values = {}
+                    break
+                if not values[n]:
+                    error.append("missing value for field {}".format(n))
 
-        # check, if server/host is allowed due to restrictions
-        asrv = config["admin"]["paranoid.allow_servers"]
-        if asrv and not any(re.match("^" + pat + "$", values["server"]) for pat in asrv):
-            error.append("Server is configured to accept only specific hosts")
-            error.append("The chosen one does not match!")
-            
-        if len(values) and not len(error):
-            print "add new server {}".format(values["name"])
-            if config[current_user.id].addNewServer(values):
+            # check, if server/host is allowed due to restrictions
+            asrv = config["admin"]["paranoid.allow_servers"]
+            if asrv and not any(re.match("^" + pat + "$", values["server"]) for pat in asrv):
+                error.append("Server is configured to accept only specific hosts")
+                error.append("The chosen one does not match!")
                 
-                config[current_user.id].srv[values["name"]]["bouncer"] = \
-                        PyIrcBouncer(config[current_user.id], values["name"])
-                # start bouncer thread
-                start_new_thread(config[current_user.id].srv[
-                    values["name"]]["bouncer"].start, ())
+            if len(values) and not len(error):
+                print "add new server {}".format(values["name"])
+                if config[current_user.id].addNewServer(values):
+                    
+                    config[current_user.id].srv[values["name"]]["bouncer"] = \
+                            PyIrcBouncer(config[current_user.id], values["name"])
+                    # start bouncer thread
+                    start_new_thread(config[current_user.id].srv[
+                        values["name"]]["bouncer"].start, ())
 
-                values = {}
-            else:
-                error.append("failed to parse values!")
-        
+                    values = {}
+                else:
+                    error.append("failed to parse values!")
+
+        elif t == "update":
+            names = "uname", "userver", "unick", "uchannel", "uport"
+            values = {}
+            for n in names:
+                values[n] = request.form.get(n)
+            
+            if values["uchannel"] != '':
+                channels = values["uchannel"].split()
+                name = values["uname"]
+                config[current_user.id].addChannel(name, channels)
+                
+
     return render_template("settings.html", cfg=config[current_user.id], 
             error=error, values=values)
 

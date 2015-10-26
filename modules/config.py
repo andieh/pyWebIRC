@@ -158,6 +158,9 @@ class UserConfig:
                     v = value
                     if key == "channel":
                         v = value.split(" ")
+                        if v == ['']:
+                            v = []
+                        print v
                     elif key == "port":
                         v = int(value)
                     self.srv[section][key] = v
@@ -226,7 +229,12 @@ class UserConfig:
         f.write(nc)
         f.close()
 
-    
+    def addChannel(self, name, channels):
+        for chan in channels:
+            if chan not in self.srv[name]["channel"]:
+                self.srv[name]["channel"].append(chan)
+                self.srv[name]["bouncer"].connection.join(chan)
+
     def addNewServer(self, values):
         names = values.keys()
         name = values["name"]
