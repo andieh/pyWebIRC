@@ -55,7 +55,11 @@ class PyIrcBouncer(irc.bot.SingleServerIRCBot):
         if channel is None:
             return self.users
         else:
-            return self.users["#{}".format(channel)]
+            channel = "#{}".format(channel)
+            if self.users.has_key(channel):
+                return self.users[channel]
+            else:
+                return []
 
     def on_welcome(self, c, e):
         for channel in self.channel:
@@ -71,6 +75,16 @@ class PyIrcBouncer(irc.bot.SingleServerIRCBot):
         # connected, maybe add some error handling here...
         self.connected = True
 
+    def part(self, channel):
+        if not self.connected:
+            return
+        channel = "#{}".format(channel)
+        if channel in self.channels:
+            self.logfiles[channel].close()
+            self.logfiles.pop(channel)
+            self.connection.part(channel, "goodbye dudes")
+            self.channels.remove(channel)
+            
     def leave(self):
         if not self.connected:
             return
@@ -78,6 +92,7 @@ class PyIrcBouncer(irc.bot.SingleServerIRCBot):
         for chan in self.channels:
             self.send(chan, "goodbye")
             self.logfiles[chan].close()
+            self.logfiles.pop(chan)
         
         self.connection.close()
         self.connected = False
@@ -108,7 +123,7 @@ class PyIrcBouncer(irc.bot.SingleServerIRCBot):
             self.logfiles[channel].write("{}\n".format(w))
             self.logfiles[channel].flush()
             print "{} [{}] {}> {}".format(tstr, channel, nick, msg)
-        except Exection, e:
+        except Exception, e:
             print "failed to log received IRC message, error was:"
             print str(e)
 
@@ -141,12 +156,13 @@ class PyIrcBouncer(irc.bot.SingleServerIRCBot):
         channel = event.target
         nick = self.get_nick(event.source)
 
-        self.log(channel, "*", "{} leaves the room!".format(nick))
         
         if not channel.startswith("#"):
             channel = "#{}".format(channel)
+        
         if nick in self.users[channel]:
             self.users[channel].remove(nick)
+            self.log(channel[1:], "*", "{} leaves the room!".format(nick))
         else:
             print "warning: user {} was not on this server\
                     (but he / she should)!".format(nick)

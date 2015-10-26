@@ -172,6 +172,37 @@ class UserConfig:
     def __getitem__(self, key):
         return self.config[key]
 
+    def removeChannel(self, server, channel):
+        bouncer = self.srv[server]["bouncer"]
+        f = open(self.configFile, "r")
+        content = f.read()
+        f.close()
+
+        channel = "#{}".format(channel)
+        srv = "[{}]".format(server)
+        found = False
+        nc = ""
+        for line in content.split("\n"):
+            if line == srv:
+                found = True
+
+            if line.startswith("channel"):
+                line = line.split("=")[1].strip()
+                channels = line.split()
+                channels.remove(channel)
+                newChannels = " ".join(channels)
+                line = "channel = {}".format(newChannels)
+                found = True
+            
+            nc += "{}\n".format(line)
+
+        f = open(self.configFile, "w")
+        f.write(nc)
+        print nc
+        f.close()
+        
+        bouncer.part(channel)
+
     def removeServer(self, name):
         bouncer = self.srv[name]["bouncer"]
         bouncer.leave()
@@ -195,6 +226,7 @@ class UserConfig:
         f.write(nc)
         f.close()
 
+    
     def addNewServer(self, values):
         names = values.keys()
         name = values["name"]

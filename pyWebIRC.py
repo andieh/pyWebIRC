@@ -179,9 +179,17 @@ def settings():
     error = []
     # remove server entry
     if "del" in request.args:
-        if "server" in request.args:
+        delServer = "server" in request.args and "channel" not in request.args
+        delChannel = "server" in request.args and "channel" in request.args
+
+        if delServer:
             server = request.args["server"]
             config[current_user.id].removeServer(server)
+        elif delChannel:
+            server = request.args["server"]
+            channel = request.args["channel"]
+            config[current_user.id].removeChannel(server, channel)
+            config[current_user.id].srv[server]["channel"].remove("#{}".format(channel))
 
     # add new server entry
     elif request.method == "POST":
@@ -231,16 +239,20 @@ def protected():
         return redirect("/")
 
     servers = config[current_user.id].servers
-    if not len(servers):
-        error = []
-        values = {}
-        return render_template("settings.html", cfg=config[current_user.id], \
-                error=error, values=values)
+    if len(servers):
+        server = servers[0]
+        channels = config[current_user.id].server(server, "channel")
+        if len(channels):
+            channel = channels[0][1:]
+            if channel != '':
+                adr = "/channel/{}/{}".format(server, channel)
+                return redirect(adr)
 
-    server = servers[0]
-    channel = config[current_user.id].server(server, "channel")[0][1:]
-    adr = "/channel/{}/{}".format(server, channel)
-    return redirect(adr)
+    error = []
+    values = {}
+    return render_template("settings.html", cfg=config[current_user.id], \
+            error=error, values=values)
+
 
 # TODO: why also 'GET' ... 'POST' seems enough and more obvious for 'posting'
 @app.route("/send", methods = ['POST', 'GET'])
