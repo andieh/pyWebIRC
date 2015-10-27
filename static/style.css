@@ -1,0 +1,84 @@
+        body {
+	     font-family: monospace;
+	     font-size: 12px;
+	     color: #333;
+	}
+	input {
+             outline-width: 0;
+	}
+	a, a:visited, a:active {
+	     text-decoration: none;
+	     color: #339;
+             font-weight: bold;
+		
+	}
+	a:hover {
+	     text-decoration: underline; 
+	     color: #66b;
+     	     font-weight: bold;
+		
+	}
+	.gen {
+	     margin: 1px;
+	     padding: 2px;
+	     border-width: 1px;
+	     border-style: solid;
+	     border-color: #dde;
+             background: #eee;
+	     padding-left: 5px;
+	     padding-right: 5px;
+	}
+	.w100 {
+	 overflow: hidden;
+         white-space: nowrap;
+         background: #eee;
+	}
+	
+	.emojione {
+	  min-height: 16px;
+	  height: 16px;
+	  min-width: 16px;
+	  width: 16px;
+	}
+	.emoji-one-ad {
+	  position:absolute;
+	  bottom:5px;
+	}
+
+
+	#userbox{
+         width: 150px;
+         height: 100%;
+	 float:right;
+ 	}
+	#usertitle{
+	 font-weight: bold;
+ 	}
+	#log{
+         margin-left: 5px;
+	 width:100%;
+	 margin-right: 160px;
+	 line-height: 17px;
+	}
+	#log .stamp {
+          font-size: 1em;
+          color: #999;
+	  float:left;
+	  margin-right: 5px;
+	}
+	#log .msg { 
+	  float:left; 
+	  margin-right: 5px;
+	}
+	#log .name { 
+	  float:left; 
+	  margin-right: 5px;
+	}
+
+	#msg {
+     	    width: 100%;
+	    
+	}
+	#send {
+	    width: 50px;
+	}

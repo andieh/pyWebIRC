@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from flask import Flask, render_template, request, url_for, redirect, \
-        Response, session, jsonify, g
+        Response, session, jsonify, g, send_from_directory
 from jinja2 import evalcontextfilter, Markup, escape
 
 from flask.ext.login import LoginManager, UserMixin, login_required, \
@@ -48,6 +48,11 @@ def main():
     if not waiter.check(request.remote_addr):
         return "denied!"
     return render_template("login.html")
+
+
+@app.route("/static/<path:path>")
+def send_static(path):
+    return send_from_directory("static", path)
 
 # executed before view is rendered. maybe needed
 @app.before_request
