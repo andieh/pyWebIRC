@@ -3,82 +3,10 @@
 <head>
 	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js">
         </script>
-	<!-- link href="mystyle.css" rel="stylesheet" type="text/css" -->
-	<style>
-	body {
-	     font-family: monospace;
-	     font-size: 12px;
-	     color: #333;
-	}
-	input {
-             outline-width: 0;
-	}
-	a, a:visited, a:active {
-	     text-decoration: none;
-	     color: #339;
-             font-weight: bold;
-		
-	}
-	a:hover {
-	     text-decoration: underline; 
-	     color: #66b;
-     	     font-weight: bold;
-		
-	}
-	.gen {
-	     margin: 1px;
-	     padding: 2px;
-	     border-width: 1px;
-	     border-style: solid;
-	     border-color: #dde;
-             background: #eee;
-	     padding-left: 5px;
-	     padding-right: 5px;
-	}
-	.w100 {
-	 overflow: hidden;
-         white-space: nowrap;
-         background: #eee;
-	}
-        .small {
-        }
-	#userbox{
-         width: 150px;
-         height: 100%;
-	 float:right;
- 	}
-	#usertitle{
-	 font-weight: bold;
- 	}
-	#log{
-         margin-left: 5px;
-	 width:100%;
-	 margin-right: 160px;
-	}
-	#log .stamp {
-          font-size: 1em;
-          color: #999;
-	  float:left;
-	  margin-right: 5px;
-	}
-	#log .msg { 
-	  float:left; 
-	  margin-right: 5px;
-	}
-	#log .name { 
-	  float:left; 
-	  margin-right: 5px;
-	}
+	<script src="//cdn.jsdelivr.net/emojione/1.5.0/lib/js/emojione.min.js"></script>
+	<link rel="stylesheet" href="//cdn.jsdelivr.net/emojione/1.5.0/assets/css/emojione.min.css" />
+	<link href="/static/style.css" rel="stylesheet" type="text/css">
 
-	#msg {
-     	    width: 100%;
-	    
-	}
-	#send {
-	    width: 50px;
-	}
-
-	</style>
 <script type="text/javascript">
 var loglen = 20;
 var refresh_time = 5;
@@ -89,28 +17,32 @@ var isBlurred=false;
 var lastMessageTs=parseInt(Date.now() / 1000);
 var lastMessageRead=lastMessageTs
 var newMessageSent = true;
+emojione.ascii = true;
 
 function reload() {
         var requestBlurr = false;
 	loglen = parseInt($( "#loglen" ).val(), 10) + 1;
 	$.getJSON("/channel/{{ server }}/{{ channel }}?json=true", function( data ) {
+	   var lastlog = "";
            var logcontent = "";
 	   $.each(data["log"].slice(-loglen), function(idx, val) {
 	     logcontent += '<div class="stamp">[' + val["stamp"] + ']</div>';
 	     if (val["user"] != "")
   	       logcontent += '<div class="name">' + val["user"] + ':</div>';
-	     logcontent += '<div class="msg">' + val["msg"] + '</div><br />';
+	     logcontent += '<div class="msg">' + emojione.toImage(val["msg"]) + '</div><br />';
+	     lastlog = val["stamp"];
 	   });
 	   $( "#log" ).html( logcontent );
 	   $( "#user" ).html( data["users"].slice().join("<br />") );
            
            // we need to think about how to get the logs here...
            // this conversion is crap and should not be needed.
-           var last = log.slice(-1)[0].match(/(\[.*\])/g)[0];
+	   /*var last = lastlog.match(/(\[.*\])/g)[0];
            last = last.substr(1,last.length-2); 
            tss = last.split(" ").join("T");
            lastMessageTs = new Date(tss).getTime() / 1000;
-           var diff = lastMessageTs - lastMessageRead;
+           var diff = lastMessageTs - lastMessageRead;*/
+	   var diff = 0;
            //console.log("last Message Ts: " + lastMessageTs);
            //console.log("last read:       " + lastMessageRead);
            //console.log("diff:            " + diff);
@@ -221,5 +153,9 @@ $(document).keypress(function(event) {
 {% else %}
   <h1>No channel selected!</h1>
 {% endif %}
+<span class="emoji-one-ad">
+Emoji provided free by <a href="http://emojione.com">Emoji One</a>
+</span>
+
 </body>
 </html>
