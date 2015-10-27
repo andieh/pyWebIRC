@@ -84,7 +84,9 @@ def load_user(request):
     # check for admin account
     ad = config["admin"]
     # i really don't understand your password hashing style :D
-    if login == ad["login"] and phash == User.get_password_hash(ad["password"]):
+    # well, maybe thats me: ok config should contain the hashed pass 
+    # then here compare hashed-pass with config-pass
+    if login == ad["login"] and phash == ad["password"]:
         user = User(ad["login"], ad["password"])
         login_user(user)
         return user
