@@ -3,6 +3,7 @@
 <head>
 	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js">
         </script>
+	<!-- link href="mystyle.css" rel="stylesheet" type="text/css" -->
 	<style>
 	body {
 	     font-family: monospace;
@@ -30,36 +31,45 @@
 	     border-width: 1px;
 	     border-style: solid;
 	     border-color: #dde;
-         background: #eee;
+             background: #eee;
 	     padding-left: 5px;
 	     padding-right: 5px;
 	}
 	.w100 {
-	     overflow: hidden;
+	 overflow: hidden;
          white-space: nowrap;
          background: #eee;
-	     /*width:100%;*/
 	}
-    .small {
-         font-size: 1em;
-         color: #ff00ff;
-    }
-    .w100w {
-         overflow: hidden;
-         white-space: nowrap;
-    }
-    #user{
-         float: left;
+        .small {
+        }
+	#userbox{
          width: 150px;
          height: 100%;
-         border-color: #000;
-         background: #ccc;
-         margin: 5px;
-    }
+	 float:right;
+ 	}
+	#usertitle{
+	 font-weight: bold;
+ 	}
 	#log{
-         float: left;
-         margin-left: 10px;
+         margin-left: 5px;
+	 width:100%;
+	 margin-right: 160px;
 	}
+	#log .stamp {
+          font-size: 1em;
+          color: #ff00ff;
+	  float:left;
+	  margin-right: 5px;
+	}
+	#log .msg { 
+	  float:left; 
+	  margin-right: 5px;
+	}
+	#log .name { 
+	  float:left; 
+	  margin-right: 5px;
+	}
+
 	#msg {
      	    width: 100%;
 	    
@@ -84,9 +94,15 @@ function reload() {
         var requestBlurr = false;
 	loglen = parseInt($( "#loglen" ).val(), 10) + 1;
 	$.getJSON("/channel/{{ server }}/{{ channel }}?json=true", function( data ) {
-           var log = data["log"];
-	   $( "#log" ).html( log.slice(-loglen).join("<br />") );
-	   $( "#user" ).html( 'Members:<br/>'+data["users"].slice().join("<br />") );
+           var logcontent = "";
+	   $.each(data["log"].slice(-loglen), function(idx, val) {
+	     logcontent += '<div class="stamp">[' + val["stamp"] + ']</div>';
+	     if (val["user"] != "")
+  	       logcontent += '<div class="name">' + val["user"] + ':</div>';
+	     logcontent += '<div class="msg">' + val["msg"] + '</div><br />';
+	   });
+	   $( "#log" ).html( logcontent );
+	   $( "#user" ).html( data["users"].slice().join("<br />") );
            
            // we need to think about how to get the logs here...
            // this conversion is crap and should not be needed.
@@ -124,6 +140,7 @@ function send() {
 	  channel: "{{ channel }}",
 	  server: "{{ server }}",
 	  msg: $( "#msg" ).val()
+
 	}, function (data) {
 		reload();
 		$( "#msg" ).val("");
@@ -191,13 +208,15 @@ $(document).keypress(function(event) {
   </p>
   <hr/>
   <div class=w100>
-    <div class=gen id=user >Members:<br/></div>
-    <div class=gen id=log > </div>
+	  <div class=gen id=userbox>
+		  <div id=usertitle>Members:</div>
+		  <div id=user></div>
+	  </div>
+	  <div class=gen id=log></div>
   </div>
   <hr/>
-  <div class=w100w>
+  <div class=w100>
     <input type="button" class=gen onclick="send()" value="Send" id="send" /><input class=gen type="text" name="msg" id="msg" autocomplete="off" />
-    
   </div>
 {% else %}
   <h1>No channel selected!</h1>

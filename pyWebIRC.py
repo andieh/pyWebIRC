@@ -310,8 +310,7 @@ def show_channel(server=None, channel=None):
         l = l.split("\n")
         f.close()
 
-        # do html editing in the renderer
-        # \TODO move this to css
+        # make log output
         for line in l:
             try:
                 line = line.encode("utf-8")
@@ -322,15 +321,24 @@ def show_channel(server=None, channel=None):
             ar = line.split(", ", 1)
             if len(ar) < 2:
                 continue
-            if ar[1].startswith("*>"):
-                nl = "<i>{}</i>".format(ar[1])
-            elif ar[1].find(nick) != -1 and not ar[1].startswith(nick):
-                nl = "<b>{}</b>".format(ar[1])
-            else:
-                nl = ar[1]
+            logline = {}
 
-            tss = datetime.datetime.fromtimestamp(int(ar[0])).strftime("%Y-%m-%d %H:%M:%S")
-            log.append("<span class=small>[{}]</span> {}".format(tss, nl))
+            if ar[1].startswith("*>"):
+                logline["user"] = ""
+                logline["msg"] = ar[1]
+                logline["highlight"] = False
+            else:
+                logline["user"], logline["msg"] = ar[1].split(">")
+
+                if ar[1].find(nick) != -1 and not ar[1].startswith(nick):
+                    logline["highlight"] = True
+                else:
+                    logline["highlight"] = False
+            
+
+            tss = datetime.datetime.fromtimestamp(int(ar[0])).strftime("%a %H:%M:%S")
+            logline["stamp"] = tss
+            log.append(logline)
 
     # get a user list
     users = srv.getUsers(channel)
@@ -340,12 +348,17 @@ def show_channel(server=None, channel=None):
     if json is not None:
         return jsonify(log=log, users=users)
 
-    return render_template("channel.html", \
-            server=server, channel=channel, \
-            log=log, \
-            cfg=config[current_user.id], \
-            users=users\
-        )
+    # drop non-json support!
+    return render_template("channel.html",
+            server=server, channel=channel,
+            log="", cfg=config[current_user.id], 
+            users=users)
+    #return render_template("channel.html", \
+    #        server=server, channel=channel, \
+    #        log="<br />".join([log, \
+    #        cfg=config[current_user.id], \
+    #        users=users\
+    #    )
 
 if __name__ == "__main__":
     
