@@ -65,39 +65,48 @@ function reload() {
 };
 
 function send() {
-	$( "#msg" ).prop("disabled", true);
+	$( "#sendBox .msg" ).prop("disabled", true);
 
 	/* ajax post request incoming */
 	$.post( "/send", {
 	  channel: "{{ channel }}",
 	  server: "{{ server }}",
-	  msg: $( "#msg" ).val()
+	  msg: $( "#sendBox .msg" ).val()
 
 	}, function (data) {
 		reload();
-		$( "#msg" ).val("");
-                $( "#msg" ).prop("disabled", false);
+		$( "#sendBox .msg" ).val("");
+                $( "#sendBox .msg" ).prop("disabled", false);
 	
 	})
 	.always(function() {
-               $( "#msg" ).prop("disabled", false);
-	       $( "#msg" ).focus();
+               $( "#sendBox .msg" ).prop("disabled", false);
+	       $( "#sendBox .msg" ).focus();
 	});
 
         newMessageSent = true;
 };
 
+function resizeMessage() {
+  $( "#sendBox .msg" ).width($( "#messageBox" ).width() - $( "#sendBox .send" ).width() - 30);
+}
+
 $(function() {
 	reload();
 	interval_ref = setInterval(reload, refresh_time*1000);
 	/*var retime = parseInt($( "#refreshlen" ).value, 10);*/
-	$( "#msg" ).keydown(function(event){
+	$( "#sendBox .msg" ).keydown(function(event){
 	/* avoid double send, do not send if #msg is disabled */
-	if(event.keyCode == 13 && ! $( "#msg" ).prop("disabled") )
+	if(event.keyCode == 13 && ! $( "#sendBox .msg" ).prop("disabled") )
      	   send(); 
 	});
 
-	$( "#msg" ).focus();
+	$( "#sendBox .msg" ).focus();
+	resizeMessage();
+});
+
+$( window ).resize(function() {
+	resizeMessage();
 });
 
 function stopBlink() {
@@ -147,8 +156,8 @@ $(document).keypress(function(event) {
 	  <div class=gen id=log></div>
   </div>
   <hr/>
-  <div class=w100>
-    <input type="button" class=gen onclick="send()" value="Send" id="send" /><input class=gen type="text" name="msg" id="msg" autocomplete="off" />
+  <div id=sendBox>
+    <input type="button" class="gen send" onclick="send()" value="Send" /><input class="gen msg" type="text" name="msg" autocomplete="off" />
   </div>
 {% else %}
   <h1>No channel selected!</h1>

@@ -46,11 +46,6 @@
 	 /*overflow-y: scroll;*/
         }
 
-	.w100 {
-	 overflow: hidden;
-         white-space: nowrap;
-         background: #eee;
-	}
 	
 	.emojione {
 	  min-height: 16px;
@@ -88,10 +83,8 @@
 	  margin-right: 5px;
 	}
 
-	#msg {
-     	    width: 100%;
-	    
-	}
-	#send {
-	    width: 50px;
+	#sendBox { }
+	#sendBox .msg { }
+	#sendBox .send {
+	    width: 50;
 	}
