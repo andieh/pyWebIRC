@@ -333,7 +333,11 @@ def show_channel(server=None, channel=None):
                 logline["msg"] = ar[1]
                 logline["highlight"] = False
             else:
-                logline["user"], logline["msg"] = ar[1].split(">")
+                t = ar[1].split(">",1)
+                if len(t) != 2:
+                    print "failed to parse msg '{}'".format(ar[1])
+
+                logline["user"], logline["msg"] = t
 
                 if ar[1].find(nick) != -1 and not ar[1].startswith(nick):
                     logline["highlight"] = True
