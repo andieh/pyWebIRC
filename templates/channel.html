@@ -22,7 +22,7 @@ emojione.ascii = true;
 function reload() {
         var requestBlurr = false;
 	loglen = parseInt($( "#loglen" ).val(), 10) + 1;
-	$.getJSON("/channel/{{ server }}/{{ channel }}?json=true", function( data ) {
+    $.getJSON("/channel/{{ server }}/{{ channel }}?json=true&len=" + loglen, function( data ) {
 	   var lastlog = "";
            var logcontent = "";
 	   $.each(data["log"].slice(-loglen), function(idx, val) {

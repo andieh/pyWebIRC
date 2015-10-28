@@ -299,11 +299,19 @@ def send():
 def show_channel(server=None, channel=None):
     """Render a single 'channel' chat-log on a given 'server'. FIXME: enc?"""
 
-    #\TODO: log must be limited by length!
-    #       either in json or "full" mode.a
-    
+    # fallback
     if server is None or channel is None:
         return "error"
+    
+    # either jsonify the output to be handled by jQuery or render a HTML page
+    json = request.args.get('json', None)
+
+    length = 0
+    if json is not None:
+        try:
+            length = int(request.args.get('len'))
+        except:
+            length = 0
 
     log = []
     srv = config[current_user.id].srv[server]["bouncer"]
@@ -314,6 +322,12 @@ def show_channel(server=None, channel=None):
         l = f.read().decode("utf-8")
         l = l.split("\n")
         f.close()
+
+        # be more efficent and only process lines requested.
+        # maybe be more efficient and also not read the 
+        # whole file from disc...
+        if length > 0:
+            l = l[-length:]
 
         # make log output
         for line in l:
@@ -352,8 +366,6 @@ def show_channel(server=None, channel=None):
     # get a user list
     users = srv.getUsers(channel)
     
-    # either jsonify the output to be handled by jQuery or render a HTML page
-    json = request.args.get('json', None)
     if json is not None:
         return jsonify(log=log, users=users)
 

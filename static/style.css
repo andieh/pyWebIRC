@@ -49,8 +49,8 @@
 
 	.messageBox {
 	 background: #eee;
-	 overflow: auto;
 	 overflow-x: hidden;
+	 /*overflow-y: scroll;*/
         }
 
 	.w100 {
