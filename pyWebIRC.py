@@ -196,7 +196,6 @@ def settings():
             server = request.args["server"]
             channel = request.args["channel"]
             config[current_user.id].removeChannel(server, channel)
-            config[current_user.id].srv[server]["channel"].remove("#{}".format(channel))
 
     # add new server entry
     elif request.method == "POST" and request.form.get("type"):

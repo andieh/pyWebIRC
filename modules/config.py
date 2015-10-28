@@ -202,33 +202,12 @@ class UserConfig:
 
     def removeChannel(self, server, channel):
         bouncer = self.srv[server]["bouncer"]
-        f = open(self.configFile, "r")
-        content = f.read()
-        f.close()
 
         channel = "#{}".format(channel)
-        srv = "[{}]".format(server)
-        found = False
-        nc = ""
-        for line in content.split("\n"):
-            if line == srv:
-                found = True
+        if channel in self.srv[server]["channel"]:
+            self.srv[server]["channel"].remove(channel)
+        self.writeCurrentConfig()
 
-            if line.startswith("channel"):
-                line = line.split("=")[1].strip()
-                channels = line.split()
-                channels.remove(channel)
-                newChannels = " ".join(channels)
-                line = "channel = {}".format(newChannels)
-                found = True
-            
-            nc += "{}\n".format(line)
-
-        f = open(self.configFile, "w")
-        f.write(nc)
-        print nc
-        f.close()
-        
         bouncer.part(channel)
 
     def removeServer(self, name):
@@ -244,6 +223,8 @@ class UserConfig:
             if chan not in self.srv[name]["channel"]:
                 self.srv[name]["channel"].append(chan)
                 self.srv[name]["bouncer"].connection.join(chan)
+
+        self.writeCurrentConfig()
 
     def addNewServer(self, values):
         names = values.keys()
