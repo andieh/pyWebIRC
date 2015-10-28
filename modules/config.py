@@ -168,6 +168,31 @@ class UserConfig:
                 print "failed to parse config file"
                 sys.exit(1)
             self.srv[section]["name"] = section
+        
+    def writeCurrentConfig(self, fn=None):
+        """
+        Create a new config file based on the current config
+        """
+        if fn is None:
+            fn = self.configFile
+
+        config = ConfigParser.RawConfigParser()
+        
+        config.add_section("config")
+        config.set("config", "password", self.config["password"])
+        config.set("config", "timeout", "10")
+
+        for (name, values) in self.srv.items():
+            config.add_section(name)
+            config.set(name, "port", values["port"])
+            config.set(name, "nick", values["nick"])
+            channels = " ".join(values["channel"])
+            config.set(name, "channel", channels)
+            config.set(name, "server", values["server"])
+
+        out = open(fn, "w")
+        config.write(out)
+        out.close()
 
     def server(self, server, key):
         return self.srv[server][key]
@@ -211,23 +236,8 @@ class UserConfig:
         bouncer.leave()
         self.servers.remove(name)
         self.srv.pop(name)
-        f = open(self.configFile, "r")
-        content = f.read()
-        f.close()
 
-        nc = ""
-        delete = False
-        for line in content.split("\n"):
-            if line == "[{}]".format(name):
-                delete = True
-            elif line.startswith("["):
-                delete = False
-            if not delete:
-                nc += "{}\n".format(line)
-
-        f = open(self.configFile, "w")
-        f.write(nc)
-        f.close()
+        self.writeCurrentConfig()
 
     def addChannel(self, name, channels):
         for chan in channels:
@@ -256,9 +266,7 @@ class UserConfig:
             self.servers.remove(name)
             return False
 
-        f = open(self.configFile, "a")
-        f.write(content)
-        f.close()
+        self.writeCurrentConfig()
 
         return True
 
