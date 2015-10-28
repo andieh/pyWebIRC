@@ -192,7 +192,8 @@ class PyIrcBouncer(irc.bot.SingleServerIRCBot):
     def on_quit(self, connection, event):
         user = self.get_nick(event.source)
         for chan in self.channel:
-            self.log(chan, "*", "{} leaves the server!".format(user))
+            if user in self.users[channel]:
+                self.log(chan, "*", "{} leaves the server!".format(user))
 
     def on_invite(self, connection, event):
         print 5,
