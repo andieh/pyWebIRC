@@ -19,12 +19,18 @@
 		
 	}
 
-	#userBox
+	#rightBox
 	{
 	     position: fixed;
 	     width: 180px;
 	     top: 115px;
-	     right: 10px;
+	     right: 23px;
+	     margin: 0;
+	     padding: 0;
+	     border: 0;
+	}
+	#userBox {
+		width: 100%;
 	}
 	#userBox .title {
 	 font-weight: bold;
@@ -61,11 +67,7 @@
 	  position:absolute;
 	  bottom:5px;
 	}
-	/*#userbox{
-         width: 150px;
-         height: 100%;
-	 float:right;
- 	}*/
+	
 	#log{
 	 line-height: 17px;
 	}
