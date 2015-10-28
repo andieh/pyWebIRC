@@ -18,6 +18,23 @@
      	     font-weight: bold;
 		
 	}
+
+	.userMenu, #topRight
+	{
+	     position: fixed;
+	     width: 150px;
+             border-width: 1px;
+             border-style: solid;
+             margin: 1px;
+             padding: 2px;
+	}
+
+	#topRight
+	{
+	     top: 140px;
+	     right: 30px;
+	}
+
 	.gen {
 	     margin: 1px;
 	     padding: 2px;
