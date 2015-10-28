@@ -19,27 +19,18 @@
 		
 	}
 
-	.userMenu, #topRight
+	#userBox
 	{
 	     position: fixed;
-	     width: 150px;
-             border-width: 1px;
-             border-style: solid;
-             margin: 1px;
-             padding: 2px;
-	     background: #eee;
-	}
-
-	#topRight
-	{
-	     top: 140px;
-	     right: 30px;
+	     width: 180px;
+	     top: 115px;
+	     right: 10px;
 	}
 
 	.gen {
 	     margin: 1px;
-	     padding: 2px;
-	     border-width: 1px;
+             padding: 3px;
+	     border-width: 2px;
 	     border-style: solid;
 	     border-color: #dde;
              background: #eee;
@@ -47,9 +38,11 @@
 	     padding-right: 5px;
 	}
 
-	.messageBox {
+	#messageBox {
 	 background: #eee;
 	 overflow-x: hidden;
+	 margin-right: 200px;
+	 border-right: 1px;
 	 /*overflow-y: scroll;*/
         }
 
@@ -69,8 +62,6 @@
 	  position:absolute;
 	  bottom:5px;
 	}
-
-
 	#userbox{
          width: 150px;
          height: 100%;
@@ -80,9 +71,6 @@
 	 font-weight: bold;
  	}
 	#log{
-         margin-left: 5px;
-	 width:100%;
-	 margin-right: 160px;
 	 line-height: 17px;
 	}
 	#log .stamp {

@@ -29,7 +29,7 @@ function reload() {
 	     logcontent += '<div class="stamp">[' + val["stamp"] + ']</div>';
 	     if (val["user"] != "")
   	       logcontent += '<div class="name">' + val["user"] + ':</div>';
-	     logcontent += '<div class="msg">' + emojione.toImage(val["msg"]) + '</div><br />';
+	     logcontent += '<div class="msg">' + emojione.toImage(val["msg"]) + '</div><br style="clear:both;" />';
 	     lastlog = val["stamp"];
 	   });
 	   $( "#log" ).html( logcontent );
@@ -139,15 +139,11 @@ $(document).keypress(function(event) {
   || history: <input type="text" name="loglen" id="loglen" value="20" />
   </p>
   <hr/>
-  <div id="topRight">
+  <div class="gen" id="userBox">
 	<div id=usertitle>Members:</div>
 	<div id=user></div>
   </div>
-  <div class=messageBox>
-	  <!--<div class=gen id=userbox>
-		  <div id=usertitle>Members:</div>
-		  <div id=user></div>
-	  </div>-->
+  <div id=messageBox>
 	  <div class=gen id=log></div>
   </div>
   <hr/>
