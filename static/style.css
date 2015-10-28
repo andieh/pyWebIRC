@@ -27,6 +27,7 @@
              border-style: solid;
              margin: 1px;
              padding: 2px;
+	     background: #eee;
 	}
 
 	#topRight
@@ -45,6 +46,13 @@
 	     padding-left: 5px;
 	     padding-right: 5px;
 	}
+
+	.messageBox {
+	 background: #eee;
+	 overflow: auto;
+	 overflow-x: hidden;
+        }
+
 	.w100 {
 	 overflow: hidden;
          white-space: nowrap;
