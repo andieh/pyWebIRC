@@ -26,6 +26,10 @@
 	     top: 115px;
 	     right: 10px;
 	}
+	#userBox .title {
+	 font-weight: bold;
+ 	}
+	#userBox .names { }
 
 	.gen {
 	     margin: 1px;
@@ -57,14 +61,11 @@
 	  position:absolute;
 	  bottom:5px;
 	}
-	#userbox{
+	/*#userbox{
          width: 150px;
          height: 100%;
 	 float:right;
- 	}
-	#usertitle{
-	 font-weight: bold;
- 	}
+ 	}*/
 	#log{
 	 line-height: 17px;
 	}
@@ -86,5 +87,5 @@
 	#sendBox { }
 	#sendBox .msg { }
 	#sendBox .send {
-	    width: 50;
+	    width: 50px;
 	}

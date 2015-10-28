@@ -33,7 +33,7 @@ function reload() {
 	     lastlog = val["stamp"];
 	   });
 	   $( "#log" ).html( logcontent );
-	   $( "#user" ).html( data["users"].slice().join("<br />") );
+	   $( "#userBox .names" ).html( data["users"].slice().join("<br />") );
            
            // we need to think about how to get the logs here...
            // this conversion is crap and should not be needed.
@@ -149,8 +149,8 @@ $(document).keypress(function(event) {
   </p>
   <hr/>
   <div class="gen" id="userBox">
-	<div id=usertitle>Members:</div>
-	<div id=user></div>
+	<div class=title>Members:</div>
+	<div class=names></div>
   </div>
   <div id=messageBox>
 	  <div class=gen id=log></div>
