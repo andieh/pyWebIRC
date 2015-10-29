@@ -31,11 +31,16 @@
 	}
 	#userBox {
 		width: 100%;
+		padding: 0;
 	}
 	#userBox .title {
 	 font-weight: bold;
+	 background-color: #dde;
+    	 padding: 3px;
  	}
-	#userBox .names { }
+	#userBox .names { 
+	    padding: 3px;	
+	}
 
 	.gen {
 	     margin: 1px;
