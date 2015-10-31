@@ -1,7 +1,8 @@
-        body {
+        body, html {
 	     font-family: monospace;
 	     font-size: 12px;
 	     color: #333;
+	     height:100%;
 	}
 	input {
              outline-width: 0;
@@ -18,26 +19,38 @@
      	     font-weight: bold;
 		
 	}
+	
+	#chatBox {
+	     width: 99%;
+	     margin: 0;
+	     padding: 0;
+	     background: #f5f5f5;
+	}
 
+	#chatBox .channel {
+	}
+	
 	#rightBox
 	{
-	     position: fixed;
 	     width: 180px;
-	     top: 115px;
-	     right: 23px;
 	     margin: 0;
 	     padding: 0;
 	     border: 0;
+	     float:right;
+	     margin-right: 6px;
 	}
+	
 	#userBox {
 		width: 100%;
 		padding: 0;
 	}
-	#userBox .title {
+	
+	#userBox .title, #chatBox .title {
 	 font-weight: bold;
 	 background-color: #dde;
     	 padding: 3px;
  	}
+
 	#userBox .names { 
 	    padding: 3px;	
 	}
@@ -56,8 +69,7 @@
 	#messageBox {
 	 background: #eee;
 	 overflow-x: hidden;
-	 margin-right: 200px;
-	 border-right: 1px;
+	 margin-right: 180px;
 	 /*overflow-y: scroll;*/
         }
 
@@ -91,8 +103,21 @@
 	  margin-right: 5px;
 	}
 
-	#sendBox { }
-	#sendBox .msg { }
+	#sendBox { 
+	  padding:0; 
+	  margin:0;
+	  margin-right: 188px;
+	  border:0;
+  	}
+	#sendBox input {
+	  width:100%;
+	}
+	#sendBox .msg { 
+	  margin-right:65px;
+	  margin-left: 0px;
+
+	}
 	#sendBox .send {
-	    width: 50px;
+          width: 50px;
+	  float:right;
 	}

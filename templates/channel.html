@@ -5,6 +5,8 @@
         </script>
 	<script src="//cdn.jsdelivr.net/emojione/1.5.0/lib/js/emojione.min.js"></script>
 	<link rel="stylesheet" href="//cdn.jsdelivr.net/emojione/1.5.0/assets/css/emojione.min.css" />
+	<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/themes/smoothness/jquery-ui.css">
+	<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
 	<link href="/static/style.css" rel="stylesheet" type="text/css">
 
 <script type="text/javascript">
@@ -65,44 +67,43 @@ function reload() {
 };
 
 function send() {
-	$( "#sendBox .msg" ).prop("disabled", true);
+	var msgfield = $( "#sendBox input[name='msg']" );
+	msgfield.prop("disabled", true);
 
 	/* ajax post request incoming */
 	$.post( "/send", {
 	  channel: "{{ channel }}",
 	  server: "{{ server }}",
-	  msg: $( "#sendBox .msg" ).val()
+	  msg: msgfield.val()
 
 	}, function (data) {
 		reload();
-		$( "#sendBox .msg" ).val("");
-                $( "#sendBox .msg" ).prop("disabled", false);
+		msgfield.val("");
+                msgfield.prop("disabled", false);
 	
 	})
 	.always(function() {
-               $( "#sendBox .msg" ).prop("disabled", false);
-	       $( "#sendBox .msg" ).focus();
+               msgfield.prop("disabled", false);
+	       msgfield.focus();
 	});
 
         newMessageSent = true;
 };
 
-function resizeMessage() {
-  $( "#sendBox .msg" ).width($( "#messageBox" ).width() - $( "#sendBox .send" ).width() - 30);
-}
-
 $(function() {
+	var msgfield = $( "#sendBox input[name='msg']" );
 	reload();
 	interval_ref = setInterval(reload, refresh_time*1000);
 	/*var retime = parseInt($( "#refreshlen" ).value, 10);*/
-	$( "#sendBox .msg" ).keydown(function(event){
+	msgfield.keydown(function(event){
 	/* avoid double send, do not send if #msg is disabled */
-	if(event.keyCode == 13 && ! $( "#sendBox .msg" ).prop("disabled") )
+	if(event.keyCode == 13 && ! msgfield.prop("disabled") )
      	   send(); 
 	});
 
-	$( "#sendBox .msg" ).focus();
-	resizeMessage();
+	msgfield.focus();
+
+	$( "#chatBox" ).resizable({ ghost: true });
 });
 
 $( window ).resize(function() {
@@ -128,6 +129,7 @@ $(document).keypress(function(event) {
   stopBlink();
 });
 
+
 </script>
 	<title>Hello from Flask</title>
 </head>
@@ -148,18 +150,23 @@ $(document).keypress(function(event) {
   || history: <input type="text" name="loglen" id="loglen" value="20" />
   </p>
   <hr/>
-  <div id="rightBox">
-	  <div class="gen" id="userBox">
-		  <div class=title>Members:</div>
-		  <div class=names></div>
-	  </div>
-  </div>
-  <div id=messageBox>
-	  <div class=gen id=log></div>
-  </div>
-  <hr/>
-  <div id=sendBox>
-    <input type="button" class="gen send" onclick="send()" value="Send" /><input class="gen msg" type="text" name="msg" autocomplete="off" />
+  <div id="chatBox" class="gen">
+	  <div class="title">#{{ channel }} || {{ server }}@{{ cfg.srv[server].server }} || Topic: &lt;insert topic here&gt;</div>
+    <div class="channel">
+      <div id="rightBox">
+        <div class="gen" id="userBox">
+          <div class="title">Members:</div>
+          <div class="names"></div>
+        </div>
+      </div>
+      <div id=messageBox>
+        <div class=gen id=log></div>
+      </div>
+      <div id=sendBox>
+	      <div class="send"><input class="gen" type="button" onclick="send()" value="Send" /></div>
+	      <div class="msg"><input class="gen" type="text" name="msg" autocomplete="off" /></div>
+      </div>
+    </div>
   </div>
 {% else %}
   <h1>No channel selected!</h1>
