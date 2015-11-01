@@ -21,7 +21,7 @@ var lastMessageRead=lastMessageTs
 var newMessageSent = true;
 emojione.ascii = true;
 
-function reload() {
+function reload(scrolldown) {
         var requestBlurr = false;
 	loglen = parseInt($( "#loglen" ).val(), 10) + 1;
     $.getJSON("/channel/{{ server }}/{{ channel }}?json=true&len=" + loglen, function( data ) {
@@ -63,7 +63,8 @@ function reload() {
              newMessageSent = false;
              lastMessageRead = lastMessageTs;
            }
-	   $("#messageBox").scrollTop($("#messageBox")[0].scrollHeight);
+	   if(scrolldown)
+		   $("#messageBox").scrollTop($("#messageBox")[0].scrollHeight);
 	});
 };
 
@@ -97,7 +98,7 @@ function winResize() {
 
 $(function() {
 	var msgfield = $( "#sendBox input[name='msg']" );
-	reload();
+	reload(true);
 	interval_ref = setInterval(reload, refresh_time*1000);
 	/*var retime = parseInt($( "#refreshlen" ).value, 10);*/
 	msgfield.keydown(function(event){
