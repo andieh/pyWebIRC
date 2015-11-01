@@ -34,7 +34,7 @@ function reload() {
 	     logcontent += '<div class="msg">' + emojione.toImage(val["msg"]) + '</div><br style="clear:both;" />';
 	     lastlog = val["stamp"];
 	   });
-	   $( "#log" ).html( logcontent );
+	   $( "#messageBox" ).html( logcontent );
 	   $( "#userBox .names" ).html( data["users"].slice().join("<br />") );
            
            // we need to think about how to get the logs here...
@@ -106,10 +106,6 @@ $(function() {
 	$( "#chatBox" ).resizable({ ghost: true });
 });
 
-$( window ).resize(function() {
-	resizeMessage();
-});
-
 function stopBlink() {
   lastMessageRead = lastMessageTs;
   isBlurred = false;
@@ -151,7 +147,7 @@ $(document).keypress(function(event) {
   </p>
   <hr/>
   <div id="chatBox" class="gen">
-	  <div class="title">#{{ channel }} || {{ server }}@{{ cfg.srv[server].server }} || Topic: &lt;insert topic here&gt;</div>
+    <div class="title">#{{ channel }} || {{ server }}@{{ cfg.srv[server].server }} || Topic: &lt;insert topic here&gt;</div>
     <div class="channel">
       <div id="rightBox">
         <div class="gen" id="userBox">
@@ -159,13 +155,12 @@ $(document).keypress(function(event) {
           <div class="names"></div>
         </div>
       </div>
-      <div id=messageBox>
-        <div class=gen id=log></div>
+      <div id="messageBox" class="gen">
       </div>
-      <div id=sendBox>
-	      <div class="send"><input class="gen" type="button" onclick="send()" value="Send" /></div>
-	      <div class="msg"><input class="gen" type="text" name="msg" autocomplete="off" /></div>
-      </div>
+    </div>
+    <div id=sendBox>
+      <div class="send"><input class="gen" type="button" onclick="send()" value="Send" /></div>
+      <div class="msg"><input class="gen" type="text" name="msg" autocomplete="off" /></div>
     </div>
   </div>
 {% else %}
