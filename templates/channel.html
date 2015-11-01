@@ -10,7 +10,7 @@
 	<link href="/static/style.css" rel="stylesheet" type="text/css">
 
 <script type="text/javascript">
-var loglen = 20;
+var loglen = 60;
 var refresh_time = 5;
 var interval_ref = "";
 
@@ -63,6 +63,7 @@ function reload() {
              newMessageSent = false;
              lastMessageRead = lastMessageTs;
            }
+	   $("#messageBox").scrollTop($("#messageBox")[0].scrollHeight);
 	});
 };
 
@@ -90,6 +91,10 @@ function send() {
         newMessageSent = true;
 };
 
+function winResize() {
+	$( "#chatBox" ).height($(window).height()-36);
+};
+
 $(function() {
 	var msgfield = $( "#sendBox input[name='msg']" );
 	reload();
@@ -104,6 +109,9 @@ $(function() {
 	msgfield.focus();
 
 	$( "#chatBox" ).resizable({ ghost: true });
+	winResize();
+
+	$("body").css("overflow", "hidden");
 });
 
 function stopBlink() {
@@ -112,6 +120,8 @@ function stopBlink() {
   document.title = "pyWebIRC";
   clearInterval(timer);
 };
+
+$(window).resize(function(event) { winResize(); });
 
 $(window).on("focus",function() { 
   stopBlink();
@@ -131,29 +141,20 @@ $(document).keypress(function(event) {
 </head>
 <body>
 {% if server and channel %}
-  <h1>show #{{ channel }} on {{ server }}!</h1>
-  <p>
-  {%- for srv in cfg["servers"] -%}
-    {{ cfg.srv[srv].server }}: 
-    {%- for chan in cfg.srv[srv].channel -%}
-    <a href="/channel/{{ cfg.srv[srv].name }}/{{ chan[1:] }}">{{ chan }}</a> | 
-    {%- endfor -%} 
-  {%- endfor -%}
-  <br/>
-  <a href="javascript:reload()">refresh</a>
-  || <a href="/settings/">settings</a>
-  || <a href="/logout/">logout</a>
-  || history: <input type="text" name="loglen" id="loglen" value="20" />
-  </p>
-  <hr/>
-  <div id="chatBox" class="gen">
+    <div id="chatBox" class="gen">
     <div class="title">#{{ channel }} || {{ server }}@{{ cfg.srv[server].server }} || Topic: &lt;insert topic here&gt;</div>
     <div class="channel">
       <div id="rightBox">
         <div class="gen" id="userBox">
           <div class="title">Members:</div>
           <div class="names"></div>
-        </div>
+	</div><br />
+	<div class="gen" id="userBox">
+	  <a href="javascript:reload()">refresh</a><br />
+	  <a href="/settings/">settings</a><br />
+	  <a href="/logout/">logout</a><br />
+	  <input type="text" name="loglen" id="loglen" value="60" />
+	</div>
       </div>
       <div id="messageBox" class="gen">
       </div>
@@ -166,9 +167,7 @@ $(document).keypress(function(event) {
 {% else %}
   <h1>No channel selected!</h1>
 {% endif %}
-<span class="emoji-one-ad">
+<!-- span class="emoji-one-ad">
 Emoji provided free by <a href="http://emojione.com">Emoji One</a>
-</span>
-
-</body>
-</html>
+</span -->
+</body></html>
