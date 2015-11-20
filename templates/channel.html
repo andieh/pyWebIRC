@@ -14,27 +14,43 @@ var loglen = 60;
 var refresh_time = 5;
 var interval_ref = "";
 
-var timer="";
+/*var timer="";
 var isBlurred=false;
 var lastMessageTs=parseInt(Date.now() / 1000);
 var lastMessageRead=lastMessageTs
-var newMessageSent = true;
+var newMessageSent = true;*/
+
+// allow emoji-one ascii codes 
 emojione.ascii = true;
 
+// current server and channel shown
+var cur_server = "{{ server }}";
+var cur_channel = "{{ channel }}";
+
 function reload(scrolldown) {
-        var requestBlurr = false;
+	//var requestBlurr = false;
+
+	// get desired log length from text form field
 	loglen = parseInt($( "#loglen" ).val(), 10) + 1;
-    $.getJSON("/channel/{{ server }}/{{ channel }}?json=true&len=" + loglen, function( data ) {
-	   var lastlog = "";
-           var logcontent = "";
+
+    // ajax call to get <cur_channel>@<cur_server> chat-log 
+    $.getJSON("/channel/" + cur_server + "/" + cur_channel + "?json=true&len=" + loglen, function( data ) {
+	   //var lastlog = "";
+	   var logcontent = "";
+
+	   // preprocess received chat-log-data to 'logcontent'
 	   $.each(data["log"].slice(-loglen), function(idx, val) {
 	     logcontent += '<div class="stamp">[' + val["stamp"] + ']</div>';
 	     if (val["user"] != "")
   	       logcontent += '<div class="name">' + val["user"] + ':</div>';
 	     logcontent += '<div class="msg">' + emojione.toImage(val["msg"]) + '</div><br style="clear:both;" />';
-	     lastlog = val["stamp"];
+	     //lastlog = val["stamp"];
 	   });
+
+	   // write log content
 	   $( "#messageBox" ).html( logcontent );
+
+	   // write users
 	   $( "#userBox .names" ).html( data["users"].slice().join("<br />") );
            
            // we need to think about how to get the logs here...
@@ -44,7 +60,7 @@ function reload(scrolldown) {
            tss = last.split(" ").join("T");
            lastMessageTs = new Date(tss).getTime() / 1000;
            var diff = lastMessageTs - lastMessageRead;*/
-	   var diff = 0;
+	   /*var diff = 0;
            //console.log("last Message Ts: " + lastMessageTs);
            //console.log("last read:       " + lastMessageRead);
            //console.log("diff:            " + diff);
@@ -62,11 +78,18 @@ function reload(scrolldown) {
            if (newMessageSent) {
              newMessageSent = false;
              lastMessageRead = lastMessageTs;
-           }
+           }*/
 	   if(scrolldown)
 		   $("#messageBox").scrollTop($("#messageBox")[0].scrollHeight);
-	});
+      });
+    return true;
 };
+
+function change_channel(new_srv, new_chan) {
+	cur_server = new_srv;
+	cur_channel = new_chan;
+	return reload(true);
+}
 
 function send() {
 	var msgfield = $( "#sendBox input[name='msg']" );
@@ -74,8 +97,8 @@ function send() {
 
 	/* ajax post request incoming */
 	$.post( "/send", {
-	  channel: "{{ channel }}",
-	  server: "{{ server }}",
+	  channel: cur_channel,
+	  server: cur_server,
 	  msg: msgfield.val()
 
 	}, function (data) {
@@ -116,15 +139,16 @@ $(function() {
 	$("body").css("overflow", "hidden");
 });
 
-function stopBlink() {
-  lastMessageRead = lastMessageTs;
+/*function stopBlink() {
+  // lastMessageRead = lastMessageTs;
   isBlurred = false;
   document.title = "pyWebIRC";
   clearInterval(timer);
-};
+};*/
 
 /*$(window).resize(function(event) { winResize(); });*/
 
+/*
 $(window).on("focus",function() { 
   stopBlink();
 });
@@ -135,11 +159,11 @@ $(document).mousemove(function(event) {
 
 $(document).keypress(function(event) {
   stopBlink();
-});
+});*/
 
 
 </script>
-	<title>Hello from Flask</title>
+	<title>pyWebIRC - Web-based, Server-Side IRC Bouncer/Client Hybrid</title>
 </head>
 <body>
 {% if server and channel %}
@@ -148,15 +172,26 @@ $(document).keypress(function(event) {
     <div class="channel">
       <div id="rightBox">
         <div class="gen" id="userBox">
-          <div class="title">Members:</div>
+          <div class="title">channel&nbsp;users:</div>
           <div class="names"></div>
+        </div><br />
+	<div class="gen" id="userBox">
+	  <div class="title">available&nbsp;channels:</div>
+	  {%- for srv in cfg.servers -%}
+	  <!-- {{ srv }} ||  @{{ cfg.srv[srv].server }} [{{ cfg.srv[srv].port }}]:<br /> -->
+	    {%- for c in cfg.srv[srv].channel -%}
+	    <a href="javascript:change_channel('{{ srv }}', '{{ c[1:] }}');">=&gt; {{ c }} @ {{ srv }}</a><br />
+	    {%- endfor -%}
+	  {%- endfor -%}
 	</div><br />
 	<div class="gen" id="userBox">
+          <div class="title">options:</div>
 	  <a href="javascript:reload()">refresh</a><br />
 	  <a href="/settings/">settings</a><br />
 	  <a href="/logout/">logout</a><br />
 	  <input type="text" name="loglen" id="loglen" value="60" />
 	</div>
+
       </div>
       <div id="messageBox" class="gen">
       </div>
