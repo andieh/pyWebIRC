@@ -435,4 +435,4 @@ if __name__ == "__main__":
         print "failed to parse host and port from config file!"
         sys.exit(1)
     
-    app.run(host=host, port=port)
+    app.run(host=host, port=port, threaded=True)
