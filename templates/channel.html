@@ -92,9 +92,9 @@ function send() {
         newMessageSent = true;
 };
 
-function winResize() {
+/*function winResize() {
 	$( "#chatBox" ).height($(window).height()-36);
-};
+};*/
 
 $(function() {
 	var msgfield = $( "#sendBox input[name='msg']" );
@@ -110,7 +110,8 @@ $(function() {
 	msgfield.focus();
 
 	$( "#chatBox" ).resizable({ ghost: true });
-	winResize();
+	$( "#chatBox" ).height($(window).height()-100);
+	/*winResize();*/
 
 	$("body").css("overflow", "hidden");
 });
@@ -122,7 +123,7 @@ function stopBlink() {
   clearInterval(timer);
 };
 
-$(window).resize(function(event) { winResize(); });
+/*$(window).resize(function(event) { winResize(); });*/
 
 $(window).on("focus",function() { 
   stopBlink();
