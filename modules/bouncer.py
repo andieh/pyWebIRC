@@ -44,11 +44,13 @@ class PyIrcBouncer(irc.bot.SingleServerIRCBot):
         # is there a running variable?
         # maybe move this to a watchdog function?
         while 1:
+            failed_count = 0
             try:
                 super(PyIrcBouncer, self).start()
+                failed_count = 0
             except Exception, e:
-                print "this can't be true. the irc bouncer need a restart!"
-                time.sleep(1)
+                time.sleep(1 + failed_count)
+                failed_count += 1
                 print str(e)
 
     def getUsers(self, channel=None):
@@ -63,7 +65,7 @@ class PyIrcBouncer(irc.bot.SingleServerIRCBot):
 
     def on_welcome(self, c, e):
         for channel in self.channel:
-            print "join channel {} on {}".format(channel, self.server)
+            #print "join channel {} on {}".format(channel, self.server)
             c.join(channel)
             # log file
             fn = os.path.join(self.logpath, "{}.log".format(channel))
@@ -84,7 +86,16 @@ class PyIrcBouncer(irc.bot.SingleServerIRCBot):
             self.logfiles.pop(channel)
             self.connection.part(channel, "goodbye dudes")
             self.channels.remove(channel)
-            
+    
+    def change_nick(self, new_nick):
+        # change nick if possible
+        if new_nick not in self.users[channel]:
+            self.connection.nick(new_nick)
+            return True 
+
+        # nick already taken:
+        return False
+
     def leave(self):
         if not self.connected:
             return
@@ -99,7 +110,7 @@ class PyIrcBouncer(irc.bot.SingleServerIRCBot):
         
     def send(self, channel, msg):
         if not self.connected:
-            print "not connected to {}".format(self.server)
+            #print "not connected to {}".format(self.server)
             return 
 
         self.connection.privmsg(channel, msg.decode("utf-8"))
@@ -122,9 +133,9 @@ class PyIrcBouncer(irc.bot.SingleServerIRCBot):
             w = "{}, {}> {}".format(ts, nick, msg)
             self.logfiles[channel].write("{}\n".format(w))
             self.logfiles[channel].flush()
-            print "{} [{}] {}> {}".format(tstr, channel, nick, msg)
+            #print "{} [{}] {}> {}".format(tstr, channel, nick, msg)
         except Exception, e:
-            print "failed to log received IRC message, error was:"
+            print "failed to log received IRC message, error was:",
             print str(e)
 
     def on_error(self, connection, event):

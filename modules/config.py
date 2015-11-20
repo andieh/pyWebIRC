@@ -200,6 +200,12 @@ class UserConfig:
     def __getitem__(self, key):
         return self.config[key]
 
+    def changeNick(self, server, new_nick):
+        # only apply to config if changing successful
+        if bouncer.change_nick(new_nick):    
+            self.srv[server]["nick"] = new_nick
+            self.writeCurrentConfig()
+
     def removeChannel(self, server, channel):
         bouncer = self.srv[server]["bouncer"]
 

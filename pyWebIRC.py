@@ -34,7 +34,7 @@ loginManager.init_app(app)
 # mmmh, threaded-web-applic using un-managed globals, is this a good idea?
 config = None
 waiter = None
-enableDebug = False
+enableDebug = True
 
 if not enableDebug:
     import logging
@@ -200,17 +200,32 @@ def settings():
     # add new server entry
     elif request.method == "POST" and request.form.get("type"):
         t = request.form.get("type")
+        
+        # which mode and set fieldnames accordingly
         if t == "newServer":
             names = ["name", "server", "nick", "port", "channel"]
+        elif t == "update":
+            names = ["uname", "userver", "unick", "uchannel", "uport"]
+        else:
+            error.append("Unknown operation! Are you doing bad things?!")
+
+        # get and preprocess form values
+        for n in names:
+            values[n] = request.form.get(n).strip()
+
+        # add new server 
+        if t == "newServer":
             # check field contents
-            for n in names:
-                values[n] = request.form.get(n)
-                if values[n] is None:
-                    error = []
-                    values = {}
-                    break
-                if not values[n]:
-                    error.append("missing value for field {}".format(n))
+                #if values[n] is None:
+                #    error = []
+                #    values = {}
+                #    break
+
+            # all fields must be filled 
+            if any(len(v) == 0 for v in values.values()):
+                error.append("missing value for field(s) {}".format(
+                    ", ".join(k for k, v in values.items() if len(v) == 0)
+                ))
 
             # check, if server/host is allowed due to restrictions
             asrv = config["admin"]["paranoid.allow_servers"]
@@ -218,8 +233,8 @@ def settings():
                 error.append("Server is configured to accept only specific hosts")
                 error.append("The chosen one does not match!")
                 
-            if len(values) and not len(error):
-                print "add new server {}".format(values["name"])
+            if len(values) > 0 and len(error) == 0:
+                #print "add new server {}".format(values["name"])
                 if config[current_user.id].addNewServer(values):
                     
                     config[current_user.id].srv[values["name"]]["bouncer"] = \
@@ -231,18 +246,22 @@ def settings():
                     values = {}
                 else:
                     error.append("failed to parse values!")
-
+        
+        # edit existing server entry
         elif t == "update":
-            names = "uname", "userver", "unick", "uchannel", "uport"
-            values = {}
-            for n in names:
-                values[n] = request.form.get(n)
+            #values = {}
+            #for n in names:
+            #    values[n] = request.form.get(n).strip()
             
-            if values["uchannel"] != '':
+            srv_name = values["uname"]
+            # if something in channel field, update channel
+            if len(values["uchannel"]) > 0:
                 channels = values["uchannel"].split()
-                name = values["uname"]
-                config[current_user.id].addChannel(name, channels)
-                
+                config[current_user.id].addChannel(srv_name, channels)
+
+            # if nick field has changed, update nick 
+            if values["unick"] != current_user.id:
+                config[current_user.id].changeNick(srv_name, values["unick"])
 
     return render_template("settings.html", cfg=config[current_user.id], 
             error=error, values=values)
@@ -279,6 +298,11 @@ def protected():
 @login_required
 def send():
     """Receiving user data/msg -> forward to irc server"""
+    
+    # if bouncer did not connect yet:
+    #if not config[current_user.id].srv[server]["bouncer"].connected:
+    #    return jsonify(control={"status": "error", "msg": "Bouncer not yet connected to server"})
+    
     if request.method == 'POST':
         if request.form["msg"] and \
             request.form["server"] and \
@@ -300,17 +324,22 @@ def show_channel(server=None, channel=None):
 
     # fallback
     if server is None or channel is None:
-        return "error"
+        return jsonify(control={"status": "error", "msg": "Wrong request"});
     
     # either jsonify the output to be handled by jQuery or render a HTML page
     json = request.args.get('json', None)
 
+    # request only given length of log   
     length = 0
     if json is not None:
         try:
             length = int(request.args.get('len'))
         except:
             length = 0
+
+    # if bouncer did not connect yet:
+    #if not config[current_user.id].srv[server]["bouncer"].connected:
+    #    return jsonify(control={"status": "error", "msg": "Bouncer not yet connected to server"})
 
     log = []
     srv = config[current_user.id].srv[server]["bouncer"]
@@ -366,7 +395,8 @@ def show_channel(server=None, channel=None):
     users = srv.getUsers(channel)
     
     if json is not None:
-        return jsonify(log=log, users=users)
+        return jsonify(control={"status": "ok"},
+                log=log, users=users)
 
     # drop non-json support!
     return render_template("channel.html",
@@ -416,14 +446,15 @@ if __name__ == "__main__":
             config[user].srv[srv]["bouncer"] = PyIrcBouncer(config[user], srv)
             # start bouncer thread
             start_new_thread(config[user].srv[srv]["bouncer"].start, ())
-            cnt = 0
-            while not config[user].srv[srv]["bouncer"].connected:
-                print "wait until server is ready..."
-                time.sleep(1)
-                cnt += 1
-                if cnt > 5:
-                    print "failed to connect all channels."
-                    break 
+            #cnt = 0
+            #while not config[user].srv[srv]["bouncer"].connected:
+            #    print "wait until server is ready - try: {} (user: {}, srv: {})". \
+            #            format(cnt+1, user, srv)
+            #    time.sleep(1+cnt)
+            #    cnt += 1
+            #    if cnt > 10:
+            #        print "failed to connect all channels (user: {}, srv: {})".format(user, srv)
+            #        break 
     # login timeout handler ? TODO: include into 'UserManager' (tm)
     waiter = Waiter(config["admin"])
 
