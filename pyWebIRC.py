@@ -34,7 +34,7 @@ loginManager.init_app(app)
 # mmmh, threaded-web-applic using un-managed globals, is this a good idea?
 config = None
 waiter = None
-enableDebug = True
+enableDebug = False
 
 if not enableDebug:
     import logging
