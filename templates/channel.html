@@ -180,7 +180,8 @@ $(document).keypress(function(event) {
 	  {%- for srv in cfg.servers -%}
 	  <!-- {{ srv }} ||  @{{ cfg.srv[srv].server }} [{{ cfg.srv[srv].port }}]:<br /> -->
 	    {%- for c in cfg.srv[srv].channel -%}
-	    <a href="javascript:change_channel('{{ srv }}', '{{ c[1:] }}');">=&gt; {{ c }} @ {{ srv }}</a><br />
+	    <!--a href="javascript:change_channel('{{ srv }}', '{{ c[1:] }}');">=&gt; {{ c }} @ {{ srv }}</a><br /-->
+	    <a href="/channel/{{ srv }}/{{ c[1:] }}">{{ srv }}-{{ c }}</a><br />
 	    {%- endfor -%}
 	  {%- endfor -%}
 	</div><br />
