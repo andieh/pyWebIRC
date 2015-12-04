@@ -147,16 +147,20 @@ def admin():
             elif len(config["admin"].users) > config["admin"]["paranoid.max_users"]:
                 error.append("server is configured to not allow any more users!")
             else:
+                timeout = 10
+                chatlines = 30
                 f = open(fn, "w")
                 f.write("[config]\n")
                 f.write("password = {}\n".format(phash))
-                f.write("timeout = 10\n")
+                f.write("timeout = {}\n").format(timeout) # timeout?
+                f.write("chatlines = {}\n").format(chatlines) # lines in chat window...
                 f.write("\n")
                 f.close()
 
                 values = {}
                 values["password"] = phash
-                values["timeout"] = str(10)
+                values["timeout"] = str(timeout)
+                values["chatlines"] = str(chatlines)
                 values["file"] = os.path.join(cfgDir, "{}.cfg".format(login))
                 values["login"] = login
                 cfg = UserConfig(values, True)

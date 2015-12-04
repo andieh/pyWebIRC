@@ -131,6 +131,8 @@ class UserConfig:
             self.configFile = cfg["file"]
             self.config.pop("file")
             self.password = cfg["password"]
+            self.timeout = cfg["timeout"]
+            self.chatlines = cfg["chatlines"]
 
             return
 
@@ -145,9 +147,14 @@ class UserConfig:
         self.config = {}
         self.config["login"] = self.login
 
+
         for section in config.sections():
             if section == "config":
+                self.chatlines = 60
+                self.timeout = 10
                 for (k,v) in config.items(section):
+                    if k == "timeout" or k == "chatlines":
+                        v = int(v)
                     self.config[k] = v
                 continue
 
@@ -180,7 +187,8 @@ class UserConfig:
         
         config.add_section("config")
         config.set("config", "password", self.config["password"])
-        config.set("config", "timeout", "10")
+        config.set("config", "timeout", self.timeout)
+        config.set("config", "chatlines", self.chatlines)
 
         for (name, values) in self.srv.items():
             config.add_section(name)
