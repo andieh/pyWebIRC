@@ -152,6 +152,11 @@ class UserConfig:
             if section == "config":
                 self.chatlines = 60
                 self.timeout = 10
+                if config.has_option(section, "chatlines"):
+                    self.chatlines = int(config.get(section, "chatlines"))
+                if config.has_option(section, "timeout"):
+                    self.timeout = int(config.get(section, "timeout"))
+                
                 for (k,v) in config.items(section):
                     if k == "timeout" or k == "chatlines":
                         v = int(v)
